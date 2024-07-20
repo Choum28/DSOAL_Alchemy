@@ -28,11 +28,16 @@ The scripts will create and use a new Dsoal_alchemy.ini in the script folder to 
 
 ## Options
 
-*When launched, the Creative ALchemy application will search the system for supported
+*When launched, Dsoal ALchemy application will search the system for supported
 DirectSound3D enabled games. All the games found will be listed in the left pane (titled
 "Installed Games"). The right pane (titled "DSOAL-enabled Games”) will show any
 games which have already been converted to use ALchemy.
 To enable ALchemy support for a particular game, select it from the left panel, and press
 the “>>” button. To undo ALchemy support, select the game from the right panel and
 press the “<<” button. You can select multiple games at once and then use the directional
-arrow buttons to update them all. 
+arrow buttons to update them all.
+
+
+<img src="https://i.imgur.com/5VL3oKI.png">
+<img src="https://i.imgur.com/fFOS4uX.png">
+<img src="https://i.imgur.com/yeEGRhc.png">
