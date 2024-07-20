@@ -38,6 +38,6 @@ press the “<<” button. You can select multiple games at once and then use th
 arrow buttons to update them all.
 
 
-<img src="https://i.imgur.com/5VL3oKI.png">
+<img src="https://i.imgur.com/3ZXPCkO.png">
 <img src="https://i.imgur.com/fFOS4uX.png">
 <img src="https://i.imgur.com/yeEGRhc.png">
