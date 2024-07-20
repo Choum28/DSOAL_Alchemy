@@ -20,10 +20,8 @@ ConvertFrom-StringData @'
 	B_CancelContent=Cancel
 	L_GameTitleContent=Game Title
 	T_SubdirToolTip=subdirectory offset off of path pointed to by RegPath or Gamepath for library support
-	C_DisableDirectMusicContent=Disable Direct Music 
-	C_DisableDirectMusicToolTip=is used to disable DirectMusic support. Default is false (0 or 1 in dsound.ini).
-	C_DisableNativeAlContent=Disable Native OpenAL drivers 
-	C_DisableNativeAlToolTip=For X-Fi and Audigy card only, disable the use of hardware openAL driver (CT_oal.dll) by ALchemy, the Creative Software 3D Library will be used instead.
+	C_SubDirContent=Install into Sub Folder
+	C_RootdirContent=Install into both Root and Sub Folders
 	# Error message
 	Badlocation=NewAlchemy required Creative Alchemy installation.
 	RegKeyInc=Registry key value incorrect
