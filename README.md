@@ -1,19 +1,20 @@
 # DSOAL_Alchemy
-Recreate in powershell the creative alchemy application but for usage with DSOAL dll.
+Recreate in powershell the creative alchemy application but for usage with DSOAL (https://github.com/kcat/dsoal).
 French and English version avalaible.
 
    What is different from creative alchemy ?
    
        *  Registry path are checked in both X86 and X86-64 path.
-       *  Install dsoal.dll and dsoal-aldrv.dll to detected game folder.
+       *  Install dsoal.dll and dsoal-aldrv.dll to game folder detected.
        
     
 ## Install
-Creative ALchemy must be installed on your pc.  
 Copy the script and your language (culture) folder into a folder of your choise.
-dsoal.dll and dsoal-aldrv.dll should be present in the script folder.
+dsoal.dll (https://github.com/kcat/dsoal)  and dsoal-aldrv.dll (https://github.com/kcat/openal-soft) should be present in the script folder.
+Note:  dsoal-aldrv.dll is the renamed soft_oal.dll file
+
 the Creative alchemy.ini file should be present in the script folder to generate
-the initial gamelist (if not Dsoal_alchemy.ini file is found). 
+the initial gamelist (if no Dsoal_alchemy.ini file is found). 
 Launch the script
    
 The script will use for text translation in priority the culture folder of your language, or will load the en-us one if it's not present (ex: de-DE).   
