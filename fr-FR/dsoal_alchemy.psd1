@@ -7,7 +7,7 @@ ConvertFrom-StringData @'
 	Defaultmsgbox=La liste de jeux et les paramètres par défaut vont être rétablis.
 	Defaultmsgbox2=Ces informations vont être sauvegardée dans : 
 	Defaultmsgbox3=Etes vous sur de vouloir continuer ?
-	Text_main=DSOAL restitue un son accéléré par composant matériel de sorte que vous puissez profiter des effets EAX et du son Audio 3D lorsque vous utilisez des jeux DirectSound3D dans windows version Vista et supérieures.
+	Text_main=DSOAL restaure le son de sorte que vous puissez profiter des effets EAX et du son Audio 3D lorsque vous utilisez des jeux DirectSound3D dans windows version Vista et supérieures.
 	Text_jeuInstall=Jeux installés
 	Text_JeuTransmut=Jeux activés par DSOAL
 	#Edit / add Form

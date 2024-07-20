@@ -7,7 +7,7 @@ ConvertFrom-StringData @'
 	Defaultmsgbox=This will revert the list of games and settings to the defaults. 
 	Defaultmsgbox2=A backup of this information will be saved to: 
 	Defaultmsgbox3=Are you sure you want to continue?
-	Text_main=DSOAL ALchemy restores hardware accelerated audio so that you can enjoy EAX effects and 3D Audio when playing Directsound 3D games in Microsoft Windows Vista and above.
+	Text_main=DSOAL ALchemy restores audio so that you can enjoy EAX effects and 3D Audio when playing Directsound 3D games in Microsoft Windows Vista and above.
 	Text_jeuInstall=Installed Games
 	Text_JeuTransmut=DSOAL Alchemy-enabled Games
 	#Edit / add Form Text
