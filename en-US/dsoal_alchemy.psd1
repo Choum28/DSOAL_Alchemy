@@ -22,7 +22,7 @@ ConvertFrom-StringData @'
 	T_SubdirToolTip=subdirectory offset off of path pointed to by RegPath or Gamepath for library support
 	C_SubDirContent=Install into Sub Folder
 	C_RootdirContent=Install into both Root and Sub Folders
-	C_x64Content=64-bit games
+	C_x64Content=64-bit game
 	C_x64ToolTip=if checked, install 64 bits (x86-64) wrapper and drivers dll in the game folder, shoud be used only with very rare directsound 3d 64bits games.
 	# Error message
 	Badlocation=NewAlchemy required Creative Alchemy installation.
