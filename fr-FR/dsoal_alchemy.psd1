@@ -22,6 +22,8 @@ ConvertFrom-StringData @'
 	T_SubdirToolTip=Permet de définir un sous-dossier par rapport au chemin remonté par le chemin d'accès
 	C_SubDirContent=Installer dans un sous-dossier
 	C_RootdirContent=Installer dans le dossier racine et un sous-dossier
+	C_x64Content=Jeu 64-bit
+	C_x64ToolTip=Si coché installe le wrapper et le pilote 64 bit (x86-64) dans le dossier du jeu, utile uniquement pour très rares jeux directsound 3D 64bits.
 	FolderChoice=Sélectionnez un dossier
 	SubFolderChoice=Sélectionnez un sous-dossier
 	# Error message
