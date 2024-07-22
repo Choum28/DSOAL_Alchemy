@@ -6,17 +6,19 @@
     What different from creative alchemy :
         Registry path are check in both X86 and X86-64 path.
 		dsoal.dll and dsoal-aldrv.dll should be present in the script folder.
+		the Creative alchemy.ini file should be present in the script folder to 
+		generate the initial gamelist (if not Dsoal_alchemy.ini file is found). 
 		
 .EXAMPLE
     .\Dsoal-Alchemy.ps1
         Launch the script
 
  -------------------------- EXEMPLE 2 --------------------------
- .\powershell.exe -WindowStyle Hidden -ep bypass -file "C:\script\Dsoal-Game-Installer.ps1"
+ .\powershell.exe -WindowStyle Hidden -ep bypass -file "C:\script\Dsoal_alchemy.ps1"
         Launch the script and hide console
 
 .OUTPUTS
-    This script will generate an ini file NewDsoalGames.ini to store gamelist audio options and change.
+    This script will generate an ini file Dsoal_alchemy.ini to store gamelist audio options and change.
     
 .NOTES
     NOM:       Dsoal-Alchemy.ps1
@@ -24,7 +26,7 @@
 
     HISTORIQUE VERSION:
 
-    1.0     15.11.2020    First version
+    1.0     20.07.2024    First version
 .LINK
  #>
  
@@ -59,7 +61,7 @@ function add-Game { # Convert value into hash table.
     return $d
 }
 
-function read-file{ #read DsoalGames ini file and convert game to hash table with add-game function, default value are define here if not present in alchemy.ini.
+function read-file{ #read Dsoal_alchemy ini file and convert game to hash table with add-game function, default value are define here if not present in alchemy.ini.
     param([string]$file)
     $list = Get-content $file
     $liste = @()
@@ -101,12 +103,12 @@ function read-file{ #read DsoalGames ini file and convert game to hash table wit
         }
     }
     if ($Number -ne $test){
-        $liste += add-Game -Name $Name -RegPath $RegPath -Gamepath $Gamepath -Buffers $Buffers -Duration $Duration -DisableDirectMusic $DisableDirectMusic -MaxVoiceCount $MaxVoiceCount -SubDir $SubDir -RootDirInstallOption $RootDirInstallOption -DisableNativeAL $DisableNativeAL -Transmut $Transmut -LogDirectSound $LogDirectSound -LogDirectSound2D $LogDirectSound2D -LogDirectSound2DStreaming $LogDirectSound2DStreaming -LogDirectSound3D $LogDirectSound3D -LogDirectSoundListener $LogDirectSoundListener -LogDirectSoundEAX $LogDirectSoundEAX -LogDirectSoundTimingInfo $LogDirectSoundTimingInfo -LogStarvation $LogStarvation
+        $liste += add-Game -Name $Name -RegPath $RegPath -Gamepath $Gamepath -Buffers $Buffers -SubDir $SubDir -RootDirInstallOption $RootDirInstallOption -Transmut $Transmut
     }
     return $liste
 }
 
-function GenerateNewAlchemy{ #Create New DsoalGames.ini file with new options, that will be used by the script
+function GenerateNewAlchemy{ #Create New Dsoal_alchemy.ini file with new options, that will be used by the script
     param([string]$file) 
     @"
 ;Creative ALchemy titles
@@ -117,7 +119,7 @@ function GenerateNewAlchemy{ #Create New DsoalGames.ini file with new options, t
 ;  SubDir <-- subdirectory offset off of path pointed to by RegPath for library support (default is empty string)
 ;  RootDirInstallOption <-- option to install translator support in both RegPath and SubDir directories (default is False)
 
-"@ | Out-File -Append DsoalGames.ini -encoding ascii
+"@ | Out-File -Append Dsoal_alchemy.ini -encoding ascii
     $liste = read-file $file
     foreach ($line in $liste){
         $a = $line.Name
@@ -125,7 +127,7 @@ function GenerateNewAlchemy{ #Create New DsoalGames.ini file with new options, t
         $c = $line.Gamepath
         $h = $line.SubDir
         $i = $line.RootDirInstallOption
-        "[$a]`rRegPath=$b`rGamePath=$c`rSubDir=$h`rRootDirInstallOption=$i`r`n" | Out-File -Append DsoalGames.ini -encoding ascii
+        "[$a]`rRegPath=$b`rGamePath=$c`rSubDir=$h`rRootDirInstallOption=$i`r`n" | Out-File -Append Dsoal_alchemy.ini -encoding ascii
     }
 }
 
@@ -216,13 +218,13 @@ Add-Type -AssemblyName System.Windows.Forms
 #load translation if exist, if not found will load en-US one.
 Import-LocalizedData -BindingVariable txt
 
-# check if inside alchemy folder and if DsoalGames.ini is present or generate a new one
+# check if inside alchemy folder and if Dsoal_alchemy.ini is present or generate a new one
 $PathALchemy=LocateAlchemy
-if (!(Test-Path -path ".\DsoalGames.ini")) {
+if (!(Test-Path -path ".\Dsoal_alchemy.ini")) {
     GenerateNewAlchemy "$PathALchemy\Alchemy.ini"
 }
 
-$script:listejeux = read-file ".\DsoalGames.ini"
+$script:listejeux = read-file ".\Dsoal_alchemy.ini"
 checkinstall $script:listejeux | Out-Null
 $script:jeutrouve = $script:listejeux | where-object Found -eq $true
 #$jeutrouve | Out-GridView
@@ -257,7 +259,7 @@ $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.T
         <TextBlock Name="Text_main" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,10,0,0" Width="762" Height="34"/>
         <TextBlock Name="Text_jeuInstall" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,54,0,0" Width="238"/>
         <TextBlock Name="Text_JeuTransmut" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="472,54,0,0" Width="173"/>
-        <TextBlock Name="T_URL" HorizontalAlignment="Left" TextWrapping="Wrap" Text="https://github.com/Choum28/NewAlchemy" VerticalAlignment="Top" Margin="20,361,0,0" FontSize="8"/>
+        <TextBlock Name="T_URL" HorizontalAlignment="Left" TextWrapping="Wrap" Text="https://github.com/Choum28/DSOAL_Alchemy" VerticalAlignment="Top" Margin="20,361,0,0" FontSize="8"/>
         <TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.0" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
     </Grid>
 </Window>
@@ -305,6 +307,7 @@ $BoutonTransmut.add_Click({
 
                 }  else { 
                     Copy-Item -Path "$PathAlchemy\dsound.dll" -Destination $gamepath\$Subdir
+					Copy-Item -Path "$PathAlchemy\dsoal-aldrv.dll" -Destination $gamepath\$Subdir
                 }
                 $MenuGauche.Items.Remove($x)
                 $MenuDroite.Items.Add($x)
@@ -647,8 +650,8 @@ $BoutonEdition.add_Click({
                 $script:jeutrouve[$count].RootDirInstallOption=$RootDirInstallOption
                 
                 # Write change in file
-                $file = Get-content ".\DsoalGames.ini"
-                $LineNumber = Select-String -pattern ([regex]::Escape("[$Name]")) DsoalGames.ini| Select-Object -ExpandProperty LineNumber
+                $file = Get-content ".\Dsoal_alchemy.ini"
+                $LineNumber = Select-String -pattern ([regex]::Escape("[$Name]")) Dsoal_alchemy.ini| Select-Object -ExpandProperty LineNumber
                 if ($regprio -eq $true) {
                     $file[$LineNumber] = "RegPath=$RegPath"
                     $file[$LineNumber +1]="GamePath="
@@ -658,7 +661,7 @@ $BoutonEdition.add_Click({
                 }
                 $file[$LineNumber +2] = "SubDir=$Subdir" 
                 $file[$LineNumber +3] = "RootDirInstallOption=$RootDirInstallOption"
-                $file | Set-Content DsoalGames.ini -encoding ascii
+                $file | Set-Content Dsoal_alchemy.ini -encoding ascii
                 
                 $Window_edit.Close()
                 }
@@ -950,7 +953,7 @@ $BoutonAjouter.add_Click({
                 $RegPath=""
                 $Gamepath=$T_Gamepath.text
             }
-            "[$Name]`rRegPath=$RegPath`rGamePath=$Gamepath`rSubDir=$SubDir`rRootDirInstallOption=$RootDirInstallOption`r`n"| Out-File -Append DsoalGames.ini -encoding ascii
+            "[$Name]`rRegPath=$RegPath`rGamePath=$Gamepath`rSubDir=$SubDir`rRootDirInstallOption=$RootDirInstallOption`r`n"| Out-File -Append Dsoal_alchemy.ini -encoding ascii
 
             # Update list game to reflect change, Order listview by name
             $script:listejeux += add-Game -Name $Name -RegPath $RegPath -Gamepath $Gamepath -SubDir $SubDir -RootDirInstallOption $RootDirInstallOption -Found $True -Transmut $False      
@@ -976,11 +979,11 @@ $BoutonAjouter.add_Click({
 
 ### Default Button (MAIN FORM)
 $BoutonParDefaut.add_Click({
-    $choice = [System.Windows.MessageBox]::Show("$($txt.Defaultmsgbox)`r$($txt.Defaultmsgbox2)`r$(Get-Location)\DsoalGames.bak`r`r$($txt.Defaultmsgbox3)" , "NewAlchemy" , 4,64)
+    $choice = [System.Windows.MessageBox]::Show("$($txt.Defaultmsgbox)`r$($txt.Defaultmsgbox2)`r$(Get-Location)\Dsoal_alchemy.bak`r`r$($txt.Defaultmsgbox3)" , "NewAlchemy" , 4,64)
     if ($choice -eq 'Yes') {
-        move-Item ".\DsoalGames.ini" ".\DsoalGames.Bak" -force
+        move-Item ".\Dsoal_alchemy.ini" ".\Dsoal_alchemy.Bak" -force
         GenerateNewAlchemy "$PathAlchemy\Alchemy.ini"	
-        $script:listejeux = read-file ".\DsoalGames.ini"
+        $script:listejeux = read-file ".\Dsoal_alchemy.ini"
         checkinstall $script:listejeux | Out-Null
         $script:jeutrouve = $script:listejeux | where-object Found -eq $true
         checktransmut $script:jeutrouve | Out-Null
