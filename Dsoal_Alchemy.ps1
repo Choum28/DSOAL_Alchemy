@@ -304,7 +304,6 @@ $BoutonTransmut.add_Click({
 					Copy-Item -Path "$PathAlchemy\dsoal-aldrv.dll" -Destination $gamepath
                     Copy-Item -Path "$PathAlchemy\dsound.dll" -Destination $gamepath\$Subdir
 					Copy-Item -Path "$PathAlchemy\dsoal-aldrv.dll" -Destination $gamepath\$Subdir
-
                 }  else { 
                     Copy-Item -Path "$PathAlchemy\dsound.dll" -Destination $gamepath\$Subdir
 					Copy-Item -Path "$PathAlchemy\dsoal-aldrv.dll" -Destination $gamepath\$Subdir
