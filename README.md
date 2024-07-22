@@ -9,12 +9,14 @@ French and English version avalaible.
        *  Support for x64 Wrapper and drivers
        
     
-## Prerequesite
+## Prerequesites
 OpenAlsoft (https://github.com/kcat/openal-soft) binary.
 DSOAL : https://github.com/kcat/dsoal) binary.
 
 Note 32 & 64 bits binary of DSOAL could be found in https://ci.appveyor.com/project/ChrisRobinson/dsoal
 Click on the correct job (x86 'Win32' or x64 'Win64') -> artefact -> Click on dsoal.zip to download it
+
+## Installation
 
 * Copy the script dsoal_alchemy.ps1 and language (culture) folder into a folder of your choise.
 * Download dsoal.dll (https://github.com/kcat/dsoal)  and OpenAlsoft (https://github.com/kcat/openal-soft)
@@ -25,6 +27,7 @@ Click on the correct job (x86 'Win32' or x64 'Win64') -> artefact -> Click on ds
 
 A Correct installation should look like this
 
+```
 DSOAL_Alchemy-main
     |
     |--dsoal_alchemy.ps1        the script itself
@@ -40,7 +43,7 @@ DSOAL_Alchemy-main
     |-- x86
          |--soft_oal.dll        32 bits version of openal soft driver
          |--dsound.dll          32 bits version of dsoal
-
+```
 
 
 Note : Creative alchemy and DSOAL Alchemy
@@ -50,22 +53,25 @@ If the games.template file is deleted, the Dsoal_alchemy.ini will be empty.
 
 ## launch the script  
 Launch the script and hide console
-.\powershell.exe -WindowStyle Hidden -ep bypass -file "C:\script\Dsoal_alchemy.ps1"
 
-The scripts will create and use a Dsoal_alchemy.ini in the script folder to store games and options.
+***.\powershell.exe -WindowStyle Hidden -ep bypass -file "C:\script\Dsoal_alchemy.ps1"***
+
+The script will create and use Dsoal_alchemy.ini to store games and options in the script folder.
 
 ## Options
 
-*When launched, Dsoal ALchemy application will search the system for supported
+* When launched, Dsoal ALchemy application will search the system for supported
 DirectSound3D enabled games. All the games found will be listed in the left pane (titled
 "Installed Games"). The right pane (titled "DSOAL-enabled Games”) will show any
 games which have already been converted to use DSOAL.
-To enable DSOAL support for a particular game, select it from the left panel, and press
-the “>>” button. To undo DSOAL support, select the game from the right panel and
+
+* To enable DSOAL support for a particular game, select it from the left panel, and press
+the “>>” button. 
+* To undo DSOAL support, select the game from the right panel and
 press the “<<” button. You can select multiple games at once and then use the directional
 arrow buttons to update them all.
 
 
 <img src="https://i.imgur.com/3ZXPCkO.png">
-<img src="https://i.imgur.com/fFOS4uX.png">
-<img src="https://i.imgur.com/yeEGRhc.png">
+<img src="https://i.imgur.com/lBo1CYW.png">
+<img src="https://i.imgur.com/VcC2clx.png">
