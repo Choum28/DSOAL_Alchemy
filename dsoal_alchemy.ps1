@@ -217,26 +217,25 @@ function checkinstall{ # Check if the game list is installed with check present 
     return $liste
 }
 
-function checkTransmut{ # Check if game is transmuted (dsoal-aldrv.dll present)
+function checkTransmut{ # Check if game is transmuted (dsoal-aldrv.dll and dsound present)
     param($liste)
-    $test = 0
+$test = 0
     foreach ($game in $liste){
+		$game.Transmut = $false
         $gamepath=$game.Gamepath
         $Subdir=$game.SubDir
         if ([string]::IsNullOrEmpty($Subdir)){
             if (test-path ("$gamepath\dsoal-aldrv.dll")){
-                $game.Transmut = $true
-            }
-            else {
-                $game.Transmut = $false
-            }
+				if (test-path ("$gamepath\dsound.dll")){
+					$game.Transmut = $true
+				}
+			}
         } else {
             if (test-path ("$gamepath\$Subdir\dsoal-aldrv.dll")){
-                $game.Transmut = $true
-            }
-            else {
-                $game.Transmut = $false
-            }
+				if (test-path ("$gamepath\$Subdir\dsound.dll")){
+					$game.Transmut = $true
+				}
+			}
         }
         $liste[$test] = $game
         $test = $test +1 
@@ -260,7 +259,7 @@ Add-Type -AssemblyName System.Windows.Forms
 #load translation if exist, if not found will load en-US one.
 Import-LocalizedData -BindingVariable txt
 
-# check if inside alchemy folder and if Dsoal_alchemy.ini is present or generate a new one
+# check if Dsoal_alchemy.ini already exist, if not check for Creative alchemy installation or use template to generate new fileenerate a new one
 $PathALchemy=LocateAlchemy
 if (!(Test-Path -path ".\Dsoal_alchemy.ini")) {
     if ($PathALchemy -ne "False"){
@@ -273,7 +272,7 @@ if (!(Test-Path -path ".\Dsoal_alchemy.ini")) {
 $script:listejeux = read-file ".\Dsoal_alchemy.ini"
 checkinstall $script:listejeux | Out-Null
 $script:jeutrouve = $script:listejeux | where-object Found -eq $true
-#$jeutrouve | Out-GridView
+#$jeutrouve | Out-GridView		#debug
 checktransmut $script:jeutrouve | Out-Null
 $jeutransmut = $script:jeutrouve | where-object Transmut -eq $true
 $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.Transmut -eq $False}
@@ -281,33 +280,35 @@ $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.T
 # Main windows
 [xml]$inputXML =@"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        Title="Dsoal Alchemy" Height="417" Width="810" ResizeMode="NoResize">
-    <Grid>
-        <ListView Name="MenuGauche" HorizontalAlignment="Left" Height="280" Margin="20,75,0,0" VerticalAlignment="Top" Width="310">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Width="300"/>
-                </GridView>
-            </ListView.View>
-        </ListView>
-        <ListView Name="MenuDroite" HorizontalAlignment="Left" Height="280" Margin="472,75,0,0" VerticalAlignment="Top" Width="310">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Width="300"/>
-                </GridView>
-            </ListView.View>
-        </ListView>
-        <Button Name="BoutonTransmut" Content="&gt;&gt;" HorizontalAlignment="Left" Height="45" Margin="350,100,0,0" VerticalAlignment="Top" Width="100"/>
-        <Button Name="BoutonUnTransmut" Content="&lt;&lt;" HorizontalAlignment="Left" Height="45  " Margin="350,163,0,0" VerticalAlignment="Top" Width="100"/>
-        <Button Name="BoutonEdition" HorizontalAlignment="Left" Height="25" Margin="350,256,0,0" VerticalAlignment="Top" Width="100"/>
-        <Button Name="BoutonAjouter" HorizontalAlignment="Left" Height="25" Margin="350,293,0,0" VerticalAlignment="Top" Width="100"/>
-        <Button Name="BoutonParDefaut" HorizontalAlignment="Left" Height="25" Margin="350,330,0,0" VerticalAlignment="Top" Width="100"/>
-        <TextBlock Name="Text_main" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,10,0,0" Width="762" Height="34"/>
-        <TextBlock Name="Text_jeuInstall" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,54,0,0" Width="238"/>
-        <TextBlock Name="Text_JeuTransmut" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="472,54,0,0" Width="173"/>
-        <TextBlock Name="T_URL" HorizontalAlignment="Left" TextWrapping="Wrap" Text="https://github.com/Choum28/DSOAL_Alchemy" VerticalAlignment="Top" Margin="20,361,0,0" FontSize="8"/>
-        <TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.1" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
-    </Grid>
+        Title="Dsoal Alchemy" Height="417" Width="818" MinHeight="417" MinWidth="818" ResizeMode="CanResizeWithGrip">
+	<Viewbox Stretch="Uniform" StretchDirection="UpOnly">
+		<Grid>
+			<ListView Name="MenuGauche" HorizontalAlignment="Left" Height="280" Margin="20,75,0,0" VerticalAlignment="Top" Width="310">
+				<ListView.View>
+					<GridView>
+						<GridViewColumn Width="300"/>
+					</GridView>
+				</ListView.View>
+			</ListView>
+			<ListView Name="MenuDroite" HorizontalAlignment="Left" Height="280" Margin="472,75,20,0" VerticalAlignment="Top" Width="310">
+				<ListView.View>
+					<GridView>
+						<GridViewColumn Width="300"/>
+					</GridView>
+				</ListView.View>
+			</ListView>
+			<Button Name="BoutonTransmut" Content="&gt;&gt;" HorizontalAlignment="Left" Height="45" Margin="350,100,0,0" VerticalAlignment="Top" Width="100"/>
+			<Button Name="BoutonUnTransmut" Content="&lt;&lt;" HorizontalAlignment="Left" Height="45  " Margin="350,163,0,0" VerticalAlignment="Top" Width="100"/>
+			<Button Name="BoutonEdition" HorizontalAlignment="Left" Height="25" Margin="350,256,0,0" VerticalAlignment="Top" Width="100"/>
+			<Button Name="BoutonAjouter" HorizontalAlignment="Left" Height="25" Margin="350,293,0,0" VerticalAlignment="Top" Width="100"/>
+			<Button Name="BoutonParDefaut" HorizontalAlignment="Left" Height="25" Margin="350,330,0,0" VerticalAlignment="Top" Width="100"/>
+			<TextBlock Name="Text_main" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,10,0,0" Width="762" Height="34"/>
+			<TextBlock Name="Text_jeuInstall" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,54,0,0" Width="238"/>
+			<TextBlock Name="Text_JeuTransmut" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="472,54,0,0" Width="173"/>
+			<TextBlock Name="T_URL" HorizontalAlignment="Left" TextWrapping="Wrap" Text="https://github.com/Choum28/DSOAL_Alchemy" VerticalAlignment="Top" Margin="20,361,0,0" FontSize="8"/>
+			<TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.11" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
+		</Grid>
+	</Viewbox>
 </Window>
 
 "@
@@ -412,11 +413,12 @@ $BoutonEdition.add_Click({
     if (!($x -eq $null)) {
         [xml]$InputXML =@"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        Height="350" Width="552" VerticalAlignment="Bottom" ResizeMode="NoResize">
+        Height="361" Width="557" MinHeight="361" MinWidth="557" VerticalAlignment="Bottom" ResizeMode="CanResizeWithGrip">
+	<Viewbox Stretch="Uniform" StretchDirection="UpOnly">
     <Grid>
-        <TextBox Name="T_titrejeu" HorizontalAlignment="Left" Height="22" Margin="28,44,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="485"/>
+		<Label Name ="L_GameTitle" HorizontalAlignment="Left" Margin="67,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.526,0"/>
+        <TextBox Name="T_titrejeu" HorizontalAlignment="Left" Height="22" Margin="28,44,28,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="485"/>
         <CheckBox Name="C_x64" HorizontalAlignment="Left" Margin="424,13,0,0" VerticalAlignment="Top"/>
-        <Label Name ="L_GameTitle" HorizontalAlignment="Left" Margin="67,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.526,0"/>
         <RadioButton Name="C_registre" HorizontalAlignment="Left" Margin="67,85,0,0" VerticalAlignment="Top" Width="252"/>
         <TextBox Name="T_registre" HorizontalAlignment="Left" Height="22" Margin="67,105,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="410"/>
         <RadioButton Name="C_Gamepath" HorizontalAlignment="Left" Margin="67,136,0,0" VerticalAlignment="Top" Width="252"/>
@@ -426,9 +428,10 @@ $BoutonEdition.add_Click({
         <TextBox Name="T_Subdir" HorizontalAlignment="Left" Height="22" Margin="67,211,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="410"/>
         <Button Name="B_SubDir" Content="..." HorizontalAlignment="Left" Height="22" Margin="491,211,0,0" VerticalAlignment="Top" Width="22"/>
         <CheckBox Name="C_Rootdir" HorizontalAlignment="Left" Margin="67,243,0,0" VerticalAlignment="Top"/>        
-        <Button Name="B_Cancel" HorizontalAlignment="Left" Height="25" Margin="439,284,0,0" VerticalAlignment="Top" Width="90"/>
-        <Button Name="B_ok" HorizontalAlignment="Left" Height="25" Margin="331,284,0,0" VerticalAlignment="Top" Width="90"/>       
+        <Button Name="B_Cancel" HorizontalAlignment="Left" Height="25" Margin="423,284,0,13" VerticalAlignment="Top" Width="90"/>
+        <Button Name="B_ok" HorizontalAlignment="Left" Height="25" Margin="315,284,0,13" VerticalAlignment="Top" Width="90"/>       
     </Grid>
+	</Viewbox>
 </Window>
 "@
         $reader=(New-Object System.Xml.XmlNodeReader $inputXML)
@@ -753,23 +756,25 @@ $BoutonEdition.add_Click({
 $BoutonAjouter.add_Click({
     [xml]$InputXML =@"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        Height="350" Width="552" VerticalAlignment="Bottom" ResizeMode="NoResize">
+        Height="361" Width="557" MinHeight="361" MinWidth="557" VerticalAlignment="Bottom" ResizeMode="CanResizeWithGrip">
+	<Viewbox Stretch="Uniform" StretchDirection="UpOnly">
     <Grid>
-        <TextBox Name="T_titrejeu" HorizontalAlignment="Left" Height="22" Margin="28,44,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="485"/>
-        <Label Name ="L_GameTitle" HorizontalAlignment="Left" Margin="67,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.526,0"/>
+		<Label Name ="L_GameTitle" HorizontalAlignment="Left" Margin="67,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.526,0"/>
+        <TextBox Name="T_titrejeu" HorizontalAlignment="Left" Height="22" Margin="28,44,28,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="485"/>
+        <CheckBox Name="C_x64" HorizontalAlignment="Left" Margin="424,13,0,0" VerticalAlignment="Top"/>
         <RadioButton Name="C_registre" HorizontalAlignment="Left" Margin="67,85,0,0" VerticalAlignment="Top" Width="252"/>
         <TextBox Name="T_registre" HorizontalAlignment="Left" Height="22" Margin="67,105,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="410"/>
-        <RadioButton Name="C_Gamepath" HorizontalAlignment="Left" Margin="67,136,0,0" VerticalAlignment="Top" Width="252"/>       
-        <TextBox Name="T_Gamepath" HorizontalAlignment="Left" Height="22" Margin="67,156,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="410" />
+        <RadioButton Name="C_Gamepath" HorizontalAlignment="Left" Margin="67,136,0,0" VerticalAlignment="Top" Width="252"/>
         <Button Name="B_GamePath" Content="..." HorizontalAlignment="Left" Height="22" Margin="491,156,0,0" VerticalAlignment="Top" Width="22"/>
+        <TextBox Name="T_Gamepath" HorizontalAlignment="Left" Height="22" Margin="67,156,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="410" />
         <CheckBox Name="C_SubDir" HorizontalAlignment="Left" Height="18" Margin="67,188,0,0" VerticalAlignment="Top" Width="192"/>
         <TextBox Name="T_Subdir" HorizontalAlignment="Left" Height="22" Margin="67,211,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="410"/>
-        <CheckBox Name="C_Rootdir" HorizontalAlignment="Left" Margin="67,243,0,0" VerticalAlignment="Top"/>
         <Button Name="B_SubDir" Content="..." HorizontalAlignment="Left" Height="22" Margin="491,211,0,0" VerticalAlignment="Top" Width="22"/>
-		<CheckBox Name="C_x64" HorizontalAlignment="Left" Margin="424,13,0,0" VerticalAlignment="Top"/>
-        <Button Name="B_Cancel" HorizontalAlignment="Left" Height="25" Margin="439,284,0,0" VerticalAlignment="Top" Width="90"/>
-        <Button Name="B_ok" HorizontalAlignment="Left" Height="25" Margin="331,284,0,0" VerticalAlignment="Top" Width="90"/>
+        <CheckBox Name="C_Rootdir" HorizontalAlignment="Left" Margin="67,243,0,0" VerticalAlignment="Top"/>        
+        <Button Name="B_Cancel" HorizontalAlignment="Left" Height="25" Margin="423,284,0,13" VerticalAlignment="Top" Width="90"/>
+        <Button Name="B_ok" HorizontalAlignment="Left" Height="25" Margin="315,284,0,13" VerticalAlignment="Top" Width="90"/>       
     </Grid>
+	</Viewbox>
 </Window>
 "@
     $reader=(New-Object System.Xml.XmlNodeReader $inputXML)
