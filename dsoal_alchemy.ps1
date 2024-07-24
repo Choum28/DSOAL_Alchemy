@@ -5,10 +5,10 @@
 .DESCRIPTION
     What different from creative alchemy :
         Registry path are check in both X86 and X86-64 path.
-		dsoal.dll and dsoal-aldrv.dll should be present in the script folder.
-		the Creative alchemy.ini file should be present in the script folder to 
-		generate the initial gamelist (if not Dsoal_alchemy.ini file is found). 
-		
+        dsoal.dll and dsoal-aldrv.dll should be present in the script folder.
+        the Creative alchemy.ini file should be present in the script folder to 
+        generate the initial gamelist (if not Dsoal_alchemy.ini file is found). 
+
 .EXAMPLE
     .\Dsoal-Alchemy.ps1
         Launch the script
@@ -25,26 +25,26 @@
     AUTEUR:    Choum
 
     HISTORIQUE VERSION:
-	1.2		24.07.2024	  Add openalsoft configuration support.
+    1.2     24.07.2024    Add openalsoft configuration support.
     1.1     22.07.2024    Add 64bits support
                           Alchemy.ini is optionnal on first launch for gamelist creation
-						  If Creative alchemy is installed, the script will use the alchemy.ini file to 
-						  create the gamelist instead of default one.
+                          If Creative alchemy is installed, the script will use the alchemy.ini file to 
+                          create the gamelist instead of default one.
     1.0     20.07.2024    First version
 .LINK
  #>
  
 function LocateAlchemy { # Check if all dlls are present and if Creative Alchemy is installed (optionnal)
-	$d = Get-Location
+    $d = Get-Location
     if (-Not (Test-Path -path "$PSScriptRoot\Games.template")){
         [System.Windows.MessageBox]::Show("$($txt.missfile) $d\Games.template","",0,	16)
         exit
     }
-	if (-Not (Test-Path -path "$PSScriptRoot\x86-64\soft_oal.dll")){
+    if (-Not (Test-Path -path "$PSScriptRoot\x86-64\soft_oal.dll")){
         [System.Windows.MessageBox]::Show("$($txt.missfile) $d\86-64\soft_oal.dll","",0,	16)
         exit
     }
-	if (-Not (Test-Path -path "$PSScriptRoot\x86-64\dsound.dll")){
+    if (-Not (Test-Path -path "$PSScriptRoot\x86-64\dsound.dll")){
         [System.Windows.MessageBox]::Show("$($txt.missfile) $d\86-64\dsound.dll","",0,	16)
         exit
     }
@@ -52,7 +52,7 @@ function LocateAlchemy { # Check if all dlls are present and if Creative Alchemy
         [System.Windows.MessageBox]::Show("$($txt.missfile) $d\x86\soft_oal.dll","",0,	16)
         exit
     }
-	if (-Not (Test-Path -path "$PSScriptRoot\x86\dsound.dll")){
+    if (-Not (Test-Path -path "$PSScriptRoot\x86\dsound.dll")){
         [System.Windows.MessageBox]::Show("$($txt.missfile) $d\x86\dsound.dll","",0,	16)
         exit
     }
@@ -79,7 +79,7 @@ function LocateAlchemy { # Check if all dlls are present and if Creative Alchemy
         $d = "False"
         return $d
     } 
-	exit
+    exit
 }
 
 function add-Game { # Convert value into hash table.
@@ -89,10 +89,10 @@ function add-Game { # Convert value into hash table.
         RegPath=$RegPath
         Gamepath=$Gamepath
         SubDir=$SubDir
-		x64=$x64
+        x64=$x64
         RootDirInstallOption=$RootDirInstallOption
         Found=$Found
-		Conf=$Conf
+        Conf=$Conf
     }
     return $d
 }
@@ -104,7 +104,7 @@ function read-file{ #read Dsoal_alchemy ini file and convert game to hash table 
     $test = 0
     $Number = 0
     $RootDirInstallOption="False"
-	$x64="False"
+    $x64="False"
     $Found=$false
     $Transmut=$false
 
@@ -119,8 +119,8 @@ function read-file{ #read Dsoal_alchemy ini file and convert game to hash table 
                     $Gamepath=""
                     $SubDir=""
                     $RootDirInstallOption="False"
-					$x64="False"
-					$Conf=""
+                    $x64="False"
+                    $Conf=""
                     $Found=$false
                     $Transmut=$false
                 }
@@ -144,7 +144,7 @@ function read-file{ #read Dsoal_alchemy ini file and convert game to hash table 
             }
             if($line -like "Conf=*") {
                 $Conf = $line.replace("Conf=","")
-            }			
+            }
         }
     }
     if ($Number -ne $test){
@@ -174,8 +174,8 @@ function GenerateNewAlchemy{ #Create New Dsoal_alchemy.ini file with new options
         $c = $line.Gamepath
         $h = $line.SubDir
         $i = $line.RootDirInstallOption
-		$j = $Line.x64
-		$h = $Line.Conf
+        $j = $Line.x64
+        $h = $Line.Conf
         "[$a]`rRegPath=$b`rGamePath=$c`rSubDir=$h`rRootDirInstallOption=$i`rx64=$j`rConf=$h`r`n" | Out-File -Append $PSScriptRoot\Dsoal_alchemy.ini -encoding ascii
     }
 }
@@ -228,21 +228,21 @@ function checkTransmut{ # Check if game is transmuted (dsoal-aldrv.dll and dsoun
     param($liste)
 $test = 0
     foreach ($game in $liste){
-		$game.Transmut = $false
+        $game.Transmut = $false
         $gamepath=$game.Gamepath
         $Subdir=$game.SubDir
         if ([string]::IsNullOrEmpty($Subdir)){
             if (test-path ("$gamepath\dsoal-aldrv.dll")){
-				if (test-path ("$gamepath\dsound.dll")){
-					$game.Transmut = $true
-				}
-			}
+                if (test-path ("$gamepath\dsound.dll")){
+                    $game.Transmut = $true
+                }
+            }
         } else {
             if (test-path ("$gamepath\$Subdir\dsoal-aldrv.dll")){
-				if (test-path ("$gamepath\$Subdir\dsound.dll")){
-					$game.Transmut = $true
-				}
-			}
+                if (test-path ("$gamepath\$Subdir\dsound.dll")){
+                    $game.Transmut = $true
+                }
+            }
         }
         $liste[$test] = $game
         $test = $test +1 
@@ -261,14 +261,14 @@ function Sortlistview{
 }
 
 function Update-Conf {
-	$C_ListConf.Items.Clear()
-	$list = Get-ChildItem $PSScriptRoot\Configs\*.ini
-		if ($list){ 
-			foreach ($entry in $list.name){
-						$C_ListConf.Items.add($entry)
-			}
-		}
-	$C_ListConf.SelectedIndex = $C_ListConf.Items.Count - 1
+    $C_ListConf.Items.Clear()
+    $list = Get-ChildItem $PSScriptRoot\Configs\*.ini
+        if ($list){ 
+            foreach ($entry in $list.name){
+                $C_ListConf.Items.add($entry)
+            }
+        }
+    $C_ListConf.SelectedIndex = $C_ListConf.Items.Count - 1
 }
 
 
@@ -300,34 +300,34 @@ $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.T
 [xml]$inputXML =@"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         Title="Dsoal Alchemy" Height="417" Width="818" MinHeight="417" MinWidth="818" ResizeMode="CanResizeWithGrip">
-	<Viewbox Stretch="Uniform" StretchDirection="UpOnly">
-		<Grid>
-			<ListView Name="MenuGauche" HorizontalAlignment="Left" Height="280" Margin="20,75,0,0" VerticalAlignment="Top" Width="310">
-				<ListView.View>
-					<GridView>
-						<GridViewColumn Width="300"/>
-					</GridView>
-				</ListView.View>
-			</ListView>
-			<ListView Name="MenuDroite" HorizontalAlignment="Left" Height="280" Margin="472,75,20,0" VerticalAlignment="Top" Width="310">
-				<ListView.View>
-					<GridView>
-						<GridViewColumn Width="300"/>
-					</GridView>
-				</ListView.View>
-			</ListView>
-			<Button Name="BoutonTransmut" Content="&gt;&gt;" HorizontalAlignment="Left" Height="45" Margin="350,100,0,0" VerticalAlignment="Top" Width="100"/>
-			<Button Name="BoutonUnTransmut" Content="&lt;&lt;" HorizontalAlignment="Left" Height="45  " Margin="350,163,0,0" VerticalAlignment="Top" Width="100"/>
-			<Button Name="BoutonEdition" HorizontalAlignment="Left" Height="25" Margin="350,256,0,0" VerticalAlignment="Top" Width="100"/>
-			<Button Name="BoutonAjouter" HorizontalAlignment="Left" Height="25" Margin="350,293,0,0" VerticalAlignment="Top" Width="100"/>
-			<Button Name="BoutonParDefaut" HorizontalAlignment="Left" Height="25" Margin="350,330,0,0" VerticalAlignment="Top" Width="100"/>
-			<TextBlock Name="Text_main" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,10,0,0" Width="762" Height="34"/>
-			<TextBlock Name="Text_jeuInstall" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,54,0,0" Width="238"/>
-			<TextBlock Name="Text_JeuTransmut" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="472,54,0,0" Width="173"/>
-			<TextBlock Name="T_URL" HorizontalAlignment="Left" TextWrapping="Wrap" Text="https://github.com/Choum28/DSOAL_Alchemy" VerticalAlignment="Top" Margin="20,361,0,0" FontSize="8"/>
-			<TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.2" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
-		</Grid>
-	</Viewbox>
+    <Viewbox Stretch="Uniform" StretchDirection="UpOnly">
+        <Grid>
+            <ListView Name="MenuGauche" HorizontalAlignment="Left" Height="280" Margin="20,75,0,0" VerticalAlignment="Top" Width="310">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Width="300"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <ListView Name="MenuDroite" HorizontalAlignment="Left" Height="280" Margin="472,75,20,0" VerticalAlignment="Top" Width="310">
+            <ListView.View>
+                    <GridView>
+                        <GridViewColumn Width="300"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <Button Name="BoutonTransmut" Content="&gt;&gt;" HorizontalAlignment="Left" Height="45" Margin="350,100,0,0" VerticalAlignment="Top" Width="100"/>
+            <Button Name="BoutonUnTransmut" Content="&lt;&lt;" HorizontalAlignment="Left" Height="45  " Margin="350,163,0,0" VerticalAlignment="Top" Width="100"/>
+            <Button Name="BoutonEdition" HorizontalAlignment="Left" Height="25" Margin="350,256,0,0" VerticalAlignment="Top" Width="100"/>
+            <Button Name="BoutonAjouter" HorizontalAlignment="Left" Height="25" Margin="350,293,0,0" VerticalAlignment="Top" Width="100"/>
+            <Button Name="BoutonParDefaut" HorizontalAlignment="Left" Height="25" Margin="350,330,0,0" VerticalAlignment="Top" Width="100"/>
+            <TextBlock Name="Text_main" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,10,0,0" Width="762" Height="34"/>
+            <TextBlock Name="Text_jeuInstall" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,54,0,0" Width="238"/>
+            <TextBlock Name="Text_JeuTransmut" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="472,54,0,0" Width="173"/>
+            <TextBlock Name="T_URL" HorizontalAlignment="Left" TextWrapping="Wrap" Text="https://github.com/Choum28/DSOAL_Alchemy" VerticalAlignment="Top" Margin="20,361,0,0" FontSize="8"/>
+            <TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.2" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
+        </Grid>
+    </Viewbox>
 </Window>
 
 "@
@@ -361,50 +361,50 @@ $BoutonTransmut.add_Click({
                 $gamepath = $game.Gamepath
                 $SubDir = $game.SubDir
                 $RootDirInstallOption = $game.RootDirInstallOption
-				$x64 = $game.x64
-				$Conf= $game.conf
-				if ($x64-eq "true") {
-					if ([string]::IsNullOrEmpty($Subdir)){
-						Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
-						Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
-						if ($conf){Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini}
-					} elseif ($RootDirInstallOption -eq "True"){
-						Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
-						Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath\$Subdir
-						Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
-						Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
-						if ($conf){
-							Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
-							Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
-						}
-					}  else { 
-						Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath\$Subdir
-						Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
-						if ($conf){Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $Subdir\alsoft.ini}
-					}
-				} else {
-							if ([string]::IsNullOrEmpty($Subdir)){
-								Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
-								Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
-								if ($conf){Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini}
-						} elseif ($RootDirInstallOption -eq "True"){
-							Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
-							Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath\$Subdir
-							Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
-							Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
-							if ($conf){
-								Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
-								Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini						
-							}							
-					}  else { 
-						Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath\$Subdir
-						Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
-						if ($conf){Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $Subdir\alsoft.ini}
-					}
-				}
-				if ($conf){
-					Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
-				}					
+                $x64 = $game.x64
+                $Conf= $game.conf
+                if ($x64-eq "true") {
+                    if ([string]::IsNullOrEmpty($Subdir)){
+                        Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
+                        Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
+                        if ($conf){Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini}
+                    } elseif ($RootDirInstallOption -eq "True"){
+                        Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
+                        Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath\$Subdir
+                        Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
+                        Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
+                        if ($conf){
+                            Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
+                            Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
+                        }
+                    } else { 
+                        Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath\$Subdir
+                        Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
+                        if ($conf){Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $Subdir\alsoft.ini}
+                    }
+                } else {
+                            if ([string]::IsNullOrEmpty($Subdir)){
+                                Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
+                                Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
+                                if ($conf){Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini}
+                            } elseif ($RootDirInstallOption -eq "True"){
+                                Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
+                                Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath\$Subdir
+                                Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
+                                Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
+                                if ($conf){
+                                    Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
+                                    Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
+                                }
+                            }  else {
+                                Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath\$Subdir
+                                Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
+                                if ($conf){Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $Subdir\alsoft.ini}
+                            }
+                    }
+                if ($conf){
+                    Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
+                }
                 $MenuGauche.Items.Remove($x)
                 $MenuDroite.Items.Add($x)
                 Sortlistview $MenuDroite
@@ -421,20 +421,20 @@ $BoutonUnTransmut.add_Click({
             $SubDir = $game.SubDir
             $RootDirInstallOption = $game.RootDirInstallOption
             if ([string]::IsNullOrEmpty($Subdir)){
-				Remove-Item "$gamepath\dsoal-aldrv.dll"
-				if (test-path "$gamepath\dsound.dll") { Remove-Item "$gamepath\dsound.dll" }
-				if (test-path "$gamepath\alsoft.ini") { Remove-Item "$gamepath\alsoft.ini" }				
+                Remove-Item "$gamepath\dsoal-aldrv.dll"
+                if (test-path "$gamepath\dsound.dll") { Remove-Item "$gamepath\dsound.dll" }
+                if (test-path "$gamepath\alsoft.ini") { Remove-Item "$gamepath\alsoft.ini" }				
             } elseif ($RootDirInstallOption -eq "True"){
-				Remove-Item "$gamepath\dsoal-aldrv.dll"	
-				if (test-path "$gamepath\dsound.dll") { Remove-Item "$gamepath\dsound.dll" }
-				if (test-path "$gamepath\alsoft.ini") { Remove-Item "$gamepath\alsoft.ini" }	
-				Remove-Item "$gamepath\$Subdir\dsoal-aldrv.dll"
-				if (test-path "$gamepath\$Subdir\dsound.dll") { Remove-Item "$gamepath\$Subdir\dsound.dll" }
-				if (test-path "$gamepath\$Subdir\alsoft.ini") { Remove-Item "$gamepath\$Subdir\alsoft.ini" }	
+                Remove-Item "$gamepath\dsoal-aldrv.dll"	
+                if (test-path "$gamepath\dsound.dll") { Remove-Item "$gamepath\dsound.dll" }
+                if (test-path "$gamepath\alsoft.ini") { Remove-Item "$gamepath\alsoft.ini" }	
+                Remove-Item "$gamepath\$Subdir\dsoal-aldrv.dll"
+                if (test-path "$gamepath\$Subdir\dsound.dll") { Remove-Item "$gamepath\$Subdir\dsound.dll" }
+                if (test-path "$gamepath\$Subdir\alsoft.ini") { Remove-Item "$gamepath\$Subdir\alsoft.ini" }	
             } else {
-				Remove-Item "$gamepath\$Subdir\dsoal-aldrv.dll"
-				if (test-path "$gamepath\$Subdir\dsound.dll") { Remove-Item "$gamepath\$Subdir\dsound.dll" }
-				if (test-path "$gamepath\$Subdir\alsoft.ini") { Remove-Item "$gamepath\$Subdir\alsoft.ini" }
+                Remove-Item "$gamepath\$Subdir\dsoal-aldrv.dll"
+                if (test-path "$gamepath\$Subdir\dsound.dll") { Remove-Item "$gamepath\$Subdir\dsound.dll" }
+                if (test-path "$gamepath\$Subdir\alsoft.ini") { Remove-Item "$gamepath\$Subdir\alsoft.ini" }
             }
             $MenuDroite.Items.Remove($x)
             $MenuGauche.Items.Add($x)
@@ -450,9 +450,9 @@ $BoutonEdition.add_Click({
         [xml]$InputXML =@"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         Height="361" Width="557" MinHeight="361" MinWidth="557" VerticalAlignment="Bottom" ResizeMode="CanResizeWithGrip">
-	<Viewbox Stretch="Uniform" StretchDirection="UpOnly">
+    <Viewbox Stretch="Uniform" StretchDirection="UpOnly">
     <Grid>
-		<Label Name ="L_GameTitle" HorizontalAlignment="Left" Margin="67,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.526,0"/>
+        <Label Name ="L_GameTitle" HorizontalAlignment="Left" Margin="67,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.526,0"/>
         <TextBox Name="T_titrejeu" HorizontalAlignment="Left" Height="22" Margin="28,44,28,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="485"/>
         <CheckBox Name="C_x64" HorizontalAlignment="Left" Margin="424,13,0,0" VerticalAlignment="Top"/>
         <RadioButton Name="C_registre" HorizontalAlignment="Left" Margin="67,85,0,0" VerticalAlignment="Top" Width="252"/>
@@ -464,12 +464,12 @@ $BoutonEdition.add_Click({
         <TextBox Name="T_Subdir" HorizontalAlignment="Left" Height="22" Margin="67,211,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="410"/>
         <Button Name="B_SubDir" Content="..." HorizontalAlignment="Left" Height="22" Margin="491,211,0,0" VerticalAlignment="Top" Width="22"/>
         <CheckBox Name="C_Rootdir" HorizontalAlignment="Left" Margin="67,243,0,0" VerticalAlignment="Top"/>
-		<ComboBox Name="C_ListConf" HorizontalAlignment="Left" Margin="90,287,0,0" VerticalAlignment="Top" Width="150"/>
-		<CheckBox Name="C_Conf" HorizontalAlignment="Left" Margin="67,266,0,0" VerticalAlignment="Top"/>
+        <ComboBox Name="C_ListConf" HorizontalAlignment="Left" Margin="90,287,0,0" VerticalAlignment="Top" Width="150"/>
+        <CheckBox Name="C_Conf" HorizontalAlignment="Left" Margin="67,266,0,0" VerticalAlignment="Top"/>
         <Button Name="B_Cancel" HorizontalAlignment="Left" Height="25" Margin="423,284,0,13" VerticalAlignment="Top" Width="90"/>
         <Button Name="B_ok" HorizontalAlignment="Left" Height="25" Margin="315,284,0,13" VerticalAlignment="Top" Width="90"/>       
     </Grid>
-	</Viewbox>
+    </Viewbox>
 </Window>
 "@
         $reader=(New-Object System.Xml.XmlNodeReader $inputXML)
@@ -488,8 +488,8 @@ $BoutonEdition.add_Click({
         $T_Subdir.ToolTip = $txt.T_SubdirToolTip
         $C_Rootdir.Content=$txt.C_RootdirContent
         $C_Conf.Content=$txt.C_ConfContent
-		$C_Conf.Tooltip=$txt.C_ConfTooltip
-		$C_x64.Content=$txt.C_x64Content
+        $C_Conf.Tooltip=$txt.C_ConfTooltip
+        $C_x64.Content=$txt.C_x64Content
         $C_x64.ToolTip=$txt.C_x64ToolTip
         $L_GameTitle.Content=$txt.L_GameTitleContent
         $B_Cancel.Content=$txt.B_CancelContent
@@ -543,7 +543,7 @@ $BoutonEdition.add_Click({
                 $T_titrejeu.text = $game.Name
                 $T_Subdir.text = $game.Subdir
                 $RootDirInstallOption = $game.RootDirInstallOption
-				$x64 = $game.x64
+                $x64 = $game.x64
                 $Conf=$game.conf
 
                 if ([string]::IsNullOrEmpty($game.RegPath)){
@@ -558,17 +558,17 @@ $BoutonEdition.add_Click({
                     $B_GamePath.IsEnabled=$False
                     $C_Registre.IsChecked=$True
                 }
-				if ($x64 -eq "True"){
-					$C_x64.IsChecked = $True
-				}else {
-					$C_x64.IsChecked = $False
-				}
+                if ($x64 -eq "True"){
+                    $C_x64.IsChecked = $True
+                }else {
+                    $C_x64.IsChecked = $False
+                }
                 if ($conf){
-                	Update-Conf
-					$C_Conf.IsChecked = $True
+                    Update-Conf
+                    $C_Conf.IsChecked = $True
                     $C_ListConf.SelectedItem = $game.conf
-				}else {
-					$C_Conf.IsChecked = $False
+                }else {
+                    $C_Conf.IsChecked = $False
                 }
                 if ([string]::IsNullOrEmpty($T_Subdir.text)){
                     $T_SubDir.IsReadOnly=$True
@@ -764,11 +764,11 @@ $BoutonEdition.add_Click({
 
                 # Prepare Game value to write
                 $Name = $T_titrejeu.text
-				if ($C_x64.IsChecked) {
-					$x64 = "True"
-				} else {
-					$x64 = "False"
-				}
+                if ($C_x64.IsChecked) {
+                    $x64 = "True"
+                } else {
+                    $x64 = "False"
+                }
                 if ($C_Rootdir.IsChecked){
                     $RootDirInstallOption="True"
                 } else {
@@ -790,7 +790,7 @@ $BoutonEdition.add_Click({
                 $script:jeutrouve[$count].MaxVoiceCount=$Voice
                 $script:jeutrouve[$count].SubDir=$Subdir
                 $script:jeutrouve[$count].RootDirInstallOption=$RootDirInstallOption
-				$script:jeutrouve[$count].x64=$x64
+                $script:jeutrouve[$count].x64=$x64
                 $script:jeutrouve[$count].Conf=$Conf
                 
                 # Write change in file
@@ -805,8 +805,8 @@ $BoutonEdition.add_Click({
                 }
                 $file[$LineNumber +2] = "SubDir=$Subdir" 
                 $file[$LineNumber +3] = "RootDirInstallOption=$RootDirInstallOption"
-				$file[$LineNumber +4] = "x64=$x64"
-				$file[$LineNumber +5] = "Conf=$Conf"
+                $file[$LineNumber +4] = "x64=$x64"
+                $file[$LineNumber +5] = "Conf=$Conf"
                 $file | Set-Content $PSScriptRoot\Dsoal_alchemy.ini -encoding ascii
                 
                 $Window_edit.Close()
@@ -821,9 +821,9 @@ $BoutonAjouter.add_Click({
     [xml]$InputXML =@"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         Height="361" Width="557" MinHeight="361" MinWidth="557" VerticalAlignment="Bottom" ResizeMode="CanResizeWithGrip">
-	<Viewbox Stretch="Uniform" StretchDirection="UpOnly">
+    <Viewbox Stretch="Uniform" StretchDirection="UpOnly">
     <Grid>
-		<Label Name ="L_GameTitle" HorizontalAlignment="Left" Margin="67,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.526,0"/>
+        <Label Name ="L_GameTitle" HorizontalAlignment="Left" Margin="67,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.526,0"/>
         <TextBox Name="T_titrejeu" HorizontalAlignment="Left" Height="22" Margin="28,44,28,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="485"/>
         <CheckBox Name="C_x64" HorizontalAlignment="Left" Margin="424,13,0,0" VerticalAlignment="Top"/>
         <RadioButton Name="C_registre" HorizontalAlignment="Left" Margin="67,85,0,0" VerticalAlignment="Top" Width="252"/>
@@ -835,12 +835,12 @@ $BoutonAjouter.add_Click({
         <TextBox Name="T_Subdir" HorizontalAlignment="Left" Height="22" Margin="67,211,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="410"/>
         <Button Name="B_SubDir" Content="..." HorizontalAlignment="Left" Height="22" Margin="491,211,0,0" VerticalAlignment="Top" Width="22"/>
         <CheckBox Name="C_Rootdir" HorizontalAlignment="Left" Margin="67,243,0,0" VerticalAlignment="Top"/>
-		<ComboBox Name="C_ListConf" HorizontalAlignment="Left" Margin="90,287,0,0" VerticalAlignment="Top" Width="150"/>
-		<CheckBox Name="C_Conf" HorizontalAlignment="Left" Margin="67,266,0,0" VerticalAlignment="Top"/>		
+        <ComboBox Name="C_ListConf" HorizontalAlignment="Left" Margin="90,287,0,0" VerticalAlignment="Top" Width="150"/>
+        <CheckBox Name="C_Conf" HorizontalAlignment="Left" Margin="67,266,0,0" VerticalAlignment="Top"/>		
         <Button Name="B_Cancel" HorizontalAlignment="Left" Height="25" Margin="423,284,0,13" VerticalAlignment="Top" Width="90"/>
         <Button Name="B_ok" HorizontalAlignment="Left" Height="25" Margin="315,284,0,13" VerticalAlignment="Top" Width="90"/>
     </Grid>
-	</Viewbox>
+    </Viewbox>
 </Window>
 "@
     $reader=(New-Object System.Xml.XmlNodeReader $inputXML)
@@ -856,9 +856,9 @@ $BoutonAjouter.add_Click({
     $C_SubDir.Content = $txt.C_SubDirContent
     $T_Subdir.ToolTip = $txt.T_SubdirToolTip
     $C_Rootdir.Content=$txt.C_RootdirContent
-	$C_Conf.Tooltip=$txt.C_ConfTooltip
-	$C_Conf.Content=$txt.C_ConfContent
-	$C_x64.Content=$txt.C_x64Content
+    $C_Conf.Tooltip=$txt.C_ConfTooltip
+    $C_Conf.Content=$txt.C_ConfContent
+    $C_x64.Content=$txt.C_x64Content
     $C_x64.ToolTip=$txt.C_x64ToolTip
     $L_GameTitle.Content=$txt.L_GameTitleContent
     $B_Cancel.Content=$txt.B_CancelContent
@@ -875,13 +875,13 @@ $BoutonAjouter.add_Click({
     $C_Rootdir.IsEnabled=$False
     $C_Rootdir.Background = '#e5e5e5'
     $B_SubDir.IsEnabled=$False
-	$C_x64.IsChecked = $False
+    $C_x64.IsChecked = $False
     $T_Registre.IsReadOnly=$False
     $T_Registre.Background = '#ffffff'
     $B_GamePath.IsEnabled=$False
     $T_Gamepath.IsReadOnly=$true
     $T_Gamepath.Background = '#e5e5e5'
-	$C_ListConf.visibility="Hidden"
+    $C_ListConf.visibility="Hidden"
  
     $C_Registre.Add_Checked({
         $T_Registre.IsReadOnly=$False
@@ -917,16 +917,15 @@ $BoutonAjouter.add_Click({
         $C_Rootdir.IsEnabled=$False
         $C_Rootdir.IsChecked=$False
     })
-	
-	$C_Conf.Add_Checked({
-		$C_ListConf.visibility="Visible"
-		Update-Conf
-	})
-	
-	$C_Conf.Add_UnChecked({
-		$C_ListConf.visibility="Hidden"
-			
-	})
+
+    $C_Conf.Add_Checked({
+        $C_ListConf.visibility="Visible"
+        Update-Conf
+    })
+
+    $C_Conf.Add_UnChecked({
+        $C_ListConf.visibility="Hidden"
+    })
 
 ## CLICK ON GAMEPATH BUTTON (ADD FORM)
     $B_GamePath.add_Click({
@@ -1102,11 +1101,11 @@ $BoutonAjouter.add_Click({
         if ($fail -eq $False){
             # Value to write
             $Name = $T_titrejeu.text
-			if ($C_x64.IsChecked) {
-				$x64 = "True"
-			} else {
-				$x64 = "False"
-			}
+            if ($C_x64.IsChecked) {
+                $x64 = "True"
+            } else {
+                $x64 = "False"
+            }
             if ($C_Rootdir.IsChecked){
                 $RootDirInstallOption="True"
             } else {
@@ -1116,11 +1115,11 @@ $BoutonAjouter.add_Click({
                 $SubDir=""
                 $RootDirInstallOption="False"
             }
-			if ($C_Conf.IsChecked){
-				$Conf=$C_ListConf.SelectedItem
-			} else {
-				$Conf=""
-				}
+            if ($C_Conf.IsChecked){
+                $Conf=$C_ListConf.SelectedItem
+            } else {
+                $Conf=""
+            }
 
             # Write change in file, Registry first, Gamepath second choice
             if ($regprio -eq $true) {
@@ -1159,11 +1158,11 @@ $BoutonParDefaut.add_Click({
     $choice = [System.Windows.MessageBox]::Show("$($txt.Defaultmsgbox)`r$($txt.Defaultmsgbox2)`r$(Get-Location)\Dsoal_alchemy.bak`r`r$($txt.Defaultmsgbox3)" , "Dsoal Alchemy" , 4,64)
     if ($choice -eq 'Yes') {
         move-Item "$PSScriptRoot\Dsoal_alchemy.ini" "$PSScriptRoot\Dsoal_alchemy.Bak" -force
-		if (Test-path -path $PSScriptRoot\alchemy.ini){
-			GenerateNewAlchemy "$PathALchemy\Alchemy.ini"
-		} else {
-			Copy-item $PSScriptRoot\Games.template $PSScriptRoot\Dsoal_alchemy.ini
-		}
+        if (Test-path -path $PSScriptRoot\alchemy.ini){
+            GenerateNewAlchemy "$PathALchemy\Alchemy.ini"
+        } else {
+            Copy-item $PSScriptRoot\Games.template $PSScriptRoot\Dsoal_alchemy.ini
+        }
         $script:listejeux = read-file "$PSScriptRoot\Dsoal_alchemy.ini"
         checkinstall $script:listejeux | Out-Null
         $script:jeutrouve = $script:listejeux | where-object Found -eq $true
