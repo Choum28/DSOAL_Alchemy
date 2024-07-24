@@ -10,10 +10,10 @@ French and English version avalaible.
        
     
 ## Prerequesites
-OpenAlsoft (https://github.com/kcat/openal-soft) binary.
-DSOAL : https://github.com/kcat/dsoal) binary.
+OpenAlsoft : https://github.com/kcat/openal-soft binaries.<br>
+DSOAL : https://github.com/kcat/dsoal binaries.
 
-<p>Note 32 & 64 bits binary of DSOAL could be found at https://ci.appveyor.com/project/ChrisRobinson/dsoal<br>
+<p>Note 32 & 64 bits binaries of DSOAL could be found at https://ci.appveyor.com/project/ChrisRobinson/dsoal<br>
 Click on the correct job (x86 'Win32' or x64 'Win64') -> artefact -> Click on dsoal.zip to download</p>
 
 ## Installation
@@ -35,6 +35,8 @@ DSOAL_Alchemy-main
     | 
     |-- en-US                   and/Or any other language culture (fr-Fr)
     |    |--dsoal_alchemy.psd1  Containt all texts related to the script
+    | 
+    |-- configs                 Folder where you put specific openalsoft (ini file) configuration you want to use
     |
     |-- x86-64
     |    |--soft_oal.dll        64 bits version of openal soft driver
@@ -46,10 +48,16 @@ DSOAL_Alchemy-main
 ```
 
 
-Note : Creative alchemy and DSOAL Alchemy<br>
+Note : 
+
+**Creative alchemy and DSOAL Alchemy**<br>
 If you already have creative alchemy installed, the script will automatically use your alchemy.ini to create the Dsoal_alchemy.ini gamelist.<br>
 If you don't have creative alchemy, the script will use the Games.template file to generate one.<br>
-If the games.template file is deleted, the Dsoal_alchemy.ini will be empty.  
+If the games.template file is deleted, the Dsoal_alchemy.ini will be empty.
+
+**Openalsoft configurations**<br>
+You can copy openalsoft configurations you want to use into the configs folder, it should be a .ini file<br>
+When the setting is selected in Dsoal_alchemy, the script will automatically copy the selected configuration as alsoft.ini into game folder(s).
 
 ## launch the script  
 Launch the script and hide console

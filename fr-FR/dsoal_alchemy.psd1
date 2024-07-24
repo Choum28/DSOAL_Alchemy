@@ -12,6 +12,8 @@ ConvertFrom-StringData @'
 	Text_JeuTransmut=Jeux activés par DSOAL
 	#Edit / add Form
 	MainTitle2=Paramètres du jeu
+	C_ConfContent=Copier configuration openalsoft
+	C_ConfTooltip=Si coché, la configuration openalsoft sélectioné sera aussi copié (en tant que alsoft.ini), utile si vous souhaitez une configuration openalsoft particulère pour un jeu.
 	C_registreContent=Utiliser le chemin d'accès au registre
 	C_GamepathContent=Utiliser le chemin d'accès au jeu
 	T_registreToolTip=Chemin du registre contenant la chaîne de l'exécutable ou le répertoire de l'exécutable (à privilégier, l'alternative est le chemin d'accès)

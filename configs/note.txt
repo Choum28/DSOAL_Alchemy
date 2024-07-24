@@ -1,0 +1,1 @@
+place your openalsoft configuratio file here, ini file only.

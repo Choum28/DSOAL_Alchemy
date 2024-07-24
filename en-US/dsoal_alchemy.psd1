@@ -12,6 +12,8 @@ ConvertFrom-StringData @'
 	Text_JeuTransmut=DSOAL Alchemy-enabled Games
 	#Edit / add Form Text
 	MainTitle2=Game Settings
+	C_ConfContent=Openalsoft configuration
+	C_ConfTooltip=If checked the configuration file selected will also be copied (as alsoft.ini), usefull if you need a specific openalsoft configuration for a game.
 	C_registreContent=Use Registry Path
 	C_GamepathContent=Use Game Path
 	T_registreToolTip=registry path containing string to executable or executable's directory (use this when available, alternative is GamePath)
