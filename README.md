@@ -83,5 +83,5 @@ Buttons and checkbox have tooltip when you place your mouse cursor on them.
 
 
 <img src="https://i.imgur.com/3ZXPCkO.png">
-<img src="https://i.imgur.com/lBo1CYW.png">
-<img src="https://i.imgur.com/VcC2clx.png">
+<img src="https://i.imgur.com/HZrG3Qv.png">
+<img src="https://i.imgur.com/6L80bXu.png">
