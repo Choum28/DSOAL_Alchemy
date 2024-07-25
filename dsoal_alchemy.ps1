@@ -21,10 +21,11 @@
     This script will generate an ini file Dsoal_alchemy.ini to store gamelist audio options and change.
     
 .NOTES
-    NOM:       Dsoal_Alchemy.ps1
-    AUTEUR:    Choum
+    NAME:       Dsoal_Alchemy.ps1
+    AUTHOR:    Choum
 
-    HISTORIQUE VERSION:
+    VERSION HISTORY:
+    1.21    25.07.2024    Considerably improves launch loading time by improving CheckPresent function.
     1.2     24.07.2024    Add openalsoft configuration support.
     1.1     22.07.2024    Add 64bits support
                           Alchemy.ini is optionnal on first launch for gamelist creation
@@ -32,37 +33,38 @@
                           create the gamelist instead of default one.
     1.0     20.07.2024    First version
 .LINK
+    https://github.com/Choum28/DSOAL_Alchemy
  #>
- 
-function LocateAlchemy { # Check if all dlls are present and if Creative Alchemy is installed (optionnal)
-    $d = Get-Location
-    if (-Not (Test-Path -path "$PSScriptRoot\Games.template")){
-        [System.Windows.MessageBox]::Show("$($txt.missfile) $d\Games.template","",0,	16)
+
+# Check if all required dlls are present and if Creative Alchemy is installed (optionnal)
+function LocateAlchemy { 
+    if (-Not (Test-Path -path "$PSScriptRoot\Games.template")) {
+        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\Games.template","",0,	16)
         exit
     }
-    if (-Not (Test-Path -path "$PSScriptRoot\x86-64\soft_oal.dll")){
-        [System.Windows.MessageBox]::Show("$($txt.missfile) $d\86-64\soft_oal.dll","",0,	16)
+    if (-Not (Test-Path -path "$PSScriptRoot\x86-64\soft_oal.dll")) {
+        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\86-64\soft_oal.dll","",0,	16)
         exit
     }
-    if (-Not (Test-Path -path "$PSScriptRoot\x86-64\dsound.dll")){
-        [System.Windows.MessageBox]::Show("$($txt.missfile) $d\86-64\dsound.dll","",0,	16)
+    if (-Not (Test-Path -path "$PSScriptRoot\x86-64\dsound.dll")) {
+        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\86-64\dsound.dll","",0,	16)
         exit
     }
-    if (-Not (Test-Path -path "$PSScriptRoot\x86\soft_oal.dll")){
-        [System.Windows.MessageBox]::Show("$($txt.missfile) $d\x86\soft_oal.dll","",0,	16)
+    if (-Not (Test-Path -path "$PSScriptRoot\x86\soft_oal.dll")) {
+        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\x86\soft_oal.dll","",0,	16)
         exit
     }
-    if (-Not (Test-Path -path "$PSScriptRoot\x86\dsound.dll")){
-        [System.Windows.MessageBox]::Show("$($txt.missfile) $d\x86\dsound.dll","",0,	16)
+    if (-Not (Test-Path -path "$PSScriptRoot\x86\dsound.dll")) {
+        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\x86\dsound.dll","",0,	16)
         exit
     }
-    if ([Environment]::Is64BitOperatingSystem -eq $true){
+    if ([Environment]::Is64BitOperatingSystem -eq $true) {
         $key = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{12321490-F573-4815-B6CC-7ABEF18C9AC4}"
     } else {
         $key = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{12321490-F573-4815-B6CC-7ABEF18C9AC4}"
     }
     $regkey = "InstallLocation"
-    if (test-path $key){
+    if (test-path $key) {
         try { 
         $d = Get-ItemPropertyvalue -Path $key -name $regkey 
         }
@@ -70,7 +72,7 @@ function LocateAlchemy { # Check if all dlls are present and if Creative Alchemy
             [System.Windows.MessageBox]::Show($txt.Badlocation,"",0,16)
             exit
         }
-        if (Test-Path -path "$d\alchemy.ini"){
+        if (Test-Path -path "$d\alchemy.ini") {
                 return $d
             } else {
                 [System.Windows.MessageBox]::Show("$($txt.missfile) $d\alchemy.ini","",0,	16)
@@ -82,79 +84,99 @@ function LocateAlchemy { # Check if all dlls are present and if Creative Alchemy
     exit
 }
 
-function add-Game { # Convert value into hash table.
-    param([string]$Name,[string]$RegPath,[string]$Gamepath,[string]$SubDir,[string]$RootDirInstallOption,[string]$x64,[string]$Conf,[bool]$Found,[bool]$Transmut)
-    $d=@{
-        Name=$Name
-        RegPath=$RegPath
-        Gamepath=$Gamepath
-        SubDir=$SubDir
-        x64=$x64
-        RootDirInstallOption=$RootDirInstallOption
-        Found=$Found
-        Conf=$Conf
+#Convert value into hash table.
+function Add-Game {
+    param (
+        [string]$Name,
+        [string]$RegPath,
+        [string]$Gamepath,
+        [string]$SubDir,
+        [string]$RootDirInstallOption,
+        [string]$x64,
+        [string]$Conf,
+        [bool]$Found,
+        [bool]$Transmut
+    )
+    
+    $d = @{
+        Name = $Name
+        RegPath = $RegPath
+        Gamepath = $Gamepath
+        SubDir = $SubDir
+        x64 = $x64
+        RootDirInstallOption = $RootDirInstallOption
+        Found = $Found
+        Conf = $Conf
     }
     return $d
 }
 
-function read-file{ #read Dsoal_alchemy ini file and convert game to hash table with add-game function, default value are define here if not present in alchemy.ini.
-    param([string]$file)
+#read Dsoal_alchemy ini file and convert game to hash table with Add-Game function, default value are defined here if not found in dsoal_alchemy.ini.
+function Read-File {
+    param (
+        [string]$file
+    )
+    
     $list = Get-content $file
     $liste = @()
     $test = 0
     $Number = 0
-    $RootDirInstallOption="False"
-    $x64="False"
-    $Found=$false
-    $Transmut=$false
+    $RootDirInstallOption = "False"
+    $x64 = "False"
+    $Found = $false
+    $Transmut = $false
 
-    foreach ($line in $list) {
+    foreach ( $line in $list ) {
         $Number = $Number + 1
-        if($line -notlike ';*') {
+        if ($line -notlike ';*') {
 
-            if($line -like '`[*') {
+            if ($line -like '`[*') {
             if ($test -gt 0) {
-                    $liste += add-Game -Name $Name -RegPath $RegPath -Gamepath $Gamepath -SubDir $SubDir -RootDirInstallOption $RootDirInstallOption -x64 $x64 -Conf $Conf -Found $Found -Transmut $Transmut
-                    $RegPath=""
-                    $Gamepath=""
-                    $SubDir=""
-                    $RootDirInstallOption="False"
-                    $x64="False"
-                    $Conf=""
-                    $Found=$false
-                    $Transmut=$false
+                    $liste += Add-Game -Name $Name -RegPath $RegPath -Gamepath $Gamepath -SubDir $SubDir -RootDirInstallOption $RootDirInstallOption -x64 $x64 -Conf $Conf -Found $Found -Transmut $Transmut
+                    $RegPath = ""
+                    $Gamepath = ""
+                    $SubDir = ""
+                    $RootDirInstallOption = "False"
+                    $x64 = "False"
+                    $Conf = ""
+                    $Found = $false
+                    $Transmut = $false
                 }
                 $test = $test+1
                 $Name = $line -replace '[][]'
             }
-            if($line -like "RegPath=*") {
+            if ($line -like "RegPath=*") {
                 $RegPath = $line.replace("RegPath=","")
             }
-            if($line -like "GamePath=*") {
+            if ($line -like "GamePath=*") {
                 $Gamepath = $line.replace("GamePath=","")
             }
-            if($line -like "SubDir=*") {
+            if ($line -like "SubDir=*") {
                 $SubDir = $line.replace("SubDir=","")
             }
-            if($line -like "RootDirInstallOption=*") {
+            if ($line -like "RootDirInstallOption=*") {
                 $RootDirInstallOption = $line.replace("RootDirInstallOption=","")
             }
-            if($line -like "x64=*") {
+            if ($line -like "x64=*") {
                 $x64 = $line.replace("x64=","")
             }
-            if($line -like "Conf=*") {
+            if ($line -like "Conf=*") {
                 $Conf = $line.replace("Conf=","")
             }
         }
     }
-    if ($Number -ne $test){
-        $liste += add-Game -Name $Name -RegPath $RegPath -Gamepath $Gamepath -SubDir $SubDir -RootDirInstallOption $RootDirInstallOption -x64 $x64 -Conf $Conf -Transmut $Transmut
+    if ($Number -ne $test) {
+        $liste += Add-Game -Name $Name -RegPath $RegPath -Gamepath $Gamepath -SubDir $SubDir -RootDirInstallOption $RootDirInstallOption -x64 $x64 -Conf $Conf -Transmut $Transmut
     }
     return $liste
 }
 
-function GenerateNewAlchemy{ #Create New Dsoal_alchemy.ini file with new options, that will be used by the script
-    param([string]$file) 
+#Create New Dsoal_alchemy.ini file with new settings
+function GenerateNewAlchemy {
+    param (
+        [string]$file
+    )
+    
     @"
 ;DSOAL ALchemy titles
 ;Format/Options:
@@ -167,8 +189,8 @@ function GenerateNewAlchemy{ #Create New Dsoal_alchemy.ini file with new options
 ;  Conf <-- Openalsoft configuration file to use if defined.
 
 "@ | Out-File -Append $PSScriptRoot\Dsoal_alchemy.ini -encoding ascii
-    $liste = read-file $file
-    foreach ($line in $liste){
+    $liste = Read-File $file
+    foreach ($line in $liste) {
         $a = $line.Name
         $b = $line.RegPath
         $c = $line.Gamepath
@@ -180,33 +202,44 @@ function GenerateNewAlchemy{ #Create New Dsoal_alchemy.ini file with new options
     }
 }
 
-function checkpresent{ # Check if game is present (registry in priority then gamepath)
-    param($a)
+# Check if game is installed (registry in priority then gamepath), use of .net for performance.
+function CheckPresent{
+    param ( 
+        $a
+    )
     $b = $a.RegPath
-    if (![string]::IsNullOrEmpty($b)) {
-        if ($b -like "HKEY_LOCAL_MACHINE*") {
-            $b = $b.replace("HKEY_LOCAL_MACHINE","HKLM:")
-        } else {
-                if($b -like "HKEY_CURRENT_USER*") {
-                    $b = $b.replace("HKEY_CURRENT_USER","HKCU:")
+    if (![string]::IsNullOrEmpty($b)) {     #entrée pas vide
+        # recup chemin et clef séparé
+        $RegKey = $b|split-path -leaf
+        $KeyPath = $b.replace("\$regkey","")
+        
+        Switch -wildcard ($b) {
+            "HKEY_LOCAL_MACHINE*" {
+                $KeyPath = $KeyPath.replace("HKEY_LOCAL_MACHINE\","")
+                $RegTest = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($KeyPath)
+                if ($Null -eq $RegTest) {
+                    $KeyPath = $Keypath.replace("SOFTWARE","SOFTWARE\WOW6432Node")
                 }
-            }        
-        # recover registry key
-        $regkey = $b|split-path -leaf
-        # delete key from registry link
-        $b = $b.replace("\$regkey","")
-        if (!(test-path $b)){
-            $b=$b.replace("HKLM:\SOFTWARE","HKLM:\SOFTWARE\WOW6432Node")
-            $b=$b.replace("HKCU:\SOFTWARE","HKCU:\SOFTWARE\WOW6432Node")
-        }
-        if (test-path $b){
-            try { $a.GamePath = Get-ItemPropertyvalue -Path $b -name $regkey
+                $RegTest = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($KeyPath)
+                if ($Null -ne $RegTest) {
+                    $a.GamePath = $Regtest.GetValue($RegKey)
+                }
             }
-            catch {}
+            "HKEY_CURRENT_USER*"{
+                $KeyPath = $KeyPath.replace("HKEY_CURRENT_USER\","")
+                $RegTest = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($KeyPath)
+                if ($Null -eq $RegTest) {
+                    $KeyPath = $Keypath.replace("SOFTWARE","SOFTWARE\WOW6432Node")
+                }
+                $RegTest = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($KeyPath)
+                if ($Null -ne $RegTest) {
+                    $a.GamePath = $Regtest.GetValue($RegKey)
+                }
+            }
         }
     }
-    if (![string]::IsNullOrEmpty($a.gamePath)){
-        if (test-path $a.GamePath){
+    if (![string]::IsNullOrEmpty($a.gamePath)) {
+        if (test-path $a.GamePath) {
             $a.Found = $true
         }
         else {$a.Found = $false}
@@ -214,32 +247,40 @@ function checkpresent{ # Check if game is present (registry in priority then gam
     return $a
 }
 
-function checkinstall{ # Check if the game list is installed with check present function.
-    param($liste)
+# Check if the game list is installed with check present function.
+function CheckInstall{ 
+    param (
+        $liste
+    )
+
     $test = 0
-    foreach ($game in $liste){ 
-        $liste[$test] = checkpresent $game
+    foreach ($game in $liste) { 
+        $liste[$test] = CheckPresent $game
         $test = $test +1
     }
     return $liste
 }
 
-function checkTransmut{ # Check if game is transmuted (dsoal-aldrv.dll and dsound present)
-    param($liste)
-$test = 0
-    foreach ($game in $liste){
+# Check if game is transmuted (dsoal-aldrv.dll + dsound present)
+function CheckTransmut{ 
+    param (
+        $liste
+    )
+
+    $test = 0
+    foreach ($game in $liste) {
         $game.Transmut = $false
-        $gamepath=$game.Gamepath
-        $Subdir=$game.SubDir
-        if ([string]::IsNullOrEmpty($Subdir)){
-            if (test-path ("$gamepath\dsoal-aldrv.dll")){
-                if (test-path ("$gamepath\dsound.dll")){
+        $gamepath = $game.Gamepath
+        $Subdir = $game.SubDir
+        if ([string]::IsNullOrEmpty($Subdir)) {
+            if (test-path ("$gamepath\dsoal-aldrv.dll")) {
+                if (test-path ("$gamepath\dsound.dll")) {
                     $game.Transmut = $true
                 }
             }
         } else {
-            if (test-path ("$gamepath\$Subdir\dsoal-aldrv.dll")){
-                if (test-path ("$gamepath\$Subdir\dsound.dll")){
+            if (test-path ("$gamepath\$Subdir\dsoal-aldrv.dll")) {
+                if (test-path ("$gamepath\$Subdir\dsound.dll")) {
                     $game.Transmut = $true
                 }
             }
@@ -251,53 +292,56 @@ $test = 0
 }
 
 function Sortlistview{
-    param($listview)
+    param (
+        $listview
+    )
+
     $items = $listview.items | Sort-Object
     $listview.Items.Clear()
-    foreach ($item in $items){
+    foreach ($item in $items) {
         $listview.Items.Add($item)
     }
     return $listview
 }
 
+#popuplate config combobox.
 function Update-Conf {
     $C_ListConf.Items.Clear()
     $list = Get-ChildItem $PSScriptRoot\Configs\*.ini
-        if ($list){ 
-            foreach ($entry in $list.name){
+        if ($list) { 
+            foreach ($entry in $list.name) {
                 $C_ListConf.Items.add($entry)
             }
         }
     $C_ListConf.SelectedIndex = $C_ListConf.Items.Count - 1
 }
 
-
 Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName System.Windows.Forms
 
-#load translation if exist, if not found will load en-US one.
+#load translation if exist, if not will use en-US.
 Import-LocalizedData -BindingVariable txt
 
-# check if Dsoal_alchemy.ini already exist, if not check for Creative alchemy installation or use template to generate new fileenerate a new one
-$PathALchemy=LocateAlchemy
+# check if Dsoal_alchemy.ini already exist, if not check for Creative alchemy file or use template to generate new dsoal_alchemy.
+$PathALchemy = LocateAlchemy
 if (!(Test-Path -path "$PSScriptRoot\Dsoal_alchemy.ini")) {
-    if ($PathALchemy -ne "False"){
+    if ($PathALchemy -ne "False") {
         GenerateNewAlchemy "$PathALchemy\Alchemy.ini"
     } else {
             Copy-item $PSScriptRoot\Games.template $PSScriptRoot\Dsoal_alchemy.ini
         }
 }
 
-$script:listejeux = read-file "$PSScriptRoot\Dsoal_alchemy.ini"
-checkinstall $script:listejeux | Out-Null
+$script:listejeux = Read-File "$PSScriptRoot\Dsoal_alchemy.ini"
+CheckInstall $script:listejeux | Out-Null
 $script:jeutrouve = $script:listejeux | where-object Found -eq $true
 #$jeutrouve | Out-GridView		#debug
-checktransmut $script:jeutrouve | Out-Null
+CheckTransmut $script:jeutrouve | Out-Null
 $jeutransmut = $script:jeutrouve | where-object Transmut -eq $true
 $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.Transmut -eq $False}
 
 # Main windows
-[xml]$inputXML =@"
+[xml]$inputXML = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         Title="Dsoal Alchemy" Height="417" Width="818" MinHeight="417" MinWidth="818" ResizeMode="CanResizeWithGrip">
     <Viewbox Stretch="Uniform" StretchDirection="UpOnly">
@@ -325,84 +369,90 @@ $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.T
             <TextBlock Name="Text_jeuInstall" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,54,0,0" Width="238"/>
             <TextBlock Name="Text_JeuTransmut" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="472,54,0,0" Width="173"/>
             <TextBlock Name="T_URL" HorizontalAlignment="Left" TextWrapping="Wrap" Text="https://github.com/Choum28/DSOAL_Alchemy" VerticalAlignment="Top" Margin="20,361,0,0" FontSize="8"/>
-            <TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.2" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
+            <TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.21" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
         </Grid>
     </Viewbox>
 </Window>
 
 "@
-$reader=(New-Object System.Xml.XmlNodeReader $inputXML)
-$Window =[Windows.Markup.XamlReader]::Load( $reader )
+$reader = (New-Object System.Xml.XmlNodeReader $inputXML)
+$Window = [Windows.Markup.XamlReader]::Load( $reader )
 $inputXML.SelectNodes("//*[@Name]") | Foreach-Object { Set-Variable -Name ($_.Name) -Value $Window.FindName($_.Name)}
 
-$BoutonEdition.Content="<< $($txt.BoutonEditionContent)"
-$BoutonAjouter.Content=$txt.BoutonAjouterContent
-$BoutonParDefaut.Content=$txt.BoutonDefaultContent
-$Text_main.Text=$txt.Text_main
-$Text_jeuInstall.Text=$txt.Text_jeuInstall
-$Text_JeuTransmut.Text=$txt.Text_JeuTransmut
+$BoutonEdition.Content = "<< $($txt.BoutonEditionContent)"
+$BoutonAjouter.Content = $txt.BoutonAjouterContent
+$BoutonParDefaut.Content = $txt.BoutonDefaultContent
+$Text_main.Text = $txt.Text_main
+$Text_jeuInstall.Text = $txt.Text_jeuInstall
+$Text_JeuTransmut.Text = $txt.Text_JeuTransmut
 
 # populate each listview, disable counter output in terminal
 $MenuGauche.Items.Clear()
-foreach ($jeu in $jeunontransmut){
+foreach ($jeu in $jeunontransmut) {
     $MenuGauche.Items.Add($jeu.name) | Out-Null
 }
 
 $MenuDroite.Items.Clear()
-foreach ($jeu in $jeutransmut){
+foreach ($jeu in $jeutransmut) {
     $MenuDroite.Items.Add($jeu.name) | Out-Null
 }
  
-#Transmut Button Copy needed file to gamepath and refresh listview (sort by name)
+#Transmut Button Copy required file to gamepath, refresh listview (sort by name)
 $BoutonTransmut.add_Click({
     $x = $Menugauche.SelectedItem
-        foreach($game in $script:jeutrouve){
-            if ($x -eq $game.Name){
+        foreach($game in $script:jeutrouve) {
+            if ($x -eq $game.Name) {
                 $gamepath = $game.Gamepath
                 $SubDir = $game.SubDir
                 $RootDirInstallOption = $game.RootDirInstallOption
                 $x64 = $game.x64
-                $Conf= $game.conf
+                $Conf = $game.conf
                 if ($x64-eq "true") {
-                    if ([string]::IsNullOrEmpty($Subdir)){
+                    if ([string]::IsNullOrEmpty($Subdir)) {
                         Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
                         Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
-                        if ($conf){Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini}
-                    } elseif ($RootDirInstallOption -eq "True"){
+                        if ($conf) {
+                            Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
+                        }
+                    } elseif ($RootDirInstallOption -eq "True") {
                         Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
                         Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath\$Subdir
                         Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
                         Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
-                        if ($conf){
+                        if ($conf) {
                             Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
                             Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
                         }
                     } else { 
                         Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath\$Subdir
                         Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
-                        if ($conf){Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $Subdir\alsoft.ini}
+                        if ($conf) {
+                            Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
+                        }
                     }
                 } else {
-                            if ([string]::IsNullOrEmpty($Subdir)){
+                            if ([string]::IsNullOrEmpty($Subdir)) {
                                 Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
                                 Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
-                                if ($conf){Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini}
-                            } elseif ($RootDirInstallOption -eq "True"){
+                                if ($conf) {Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini}
+                            } elseif ($RootDirInstallOption -eq "True") {
                                 Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
                                 Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath\$Subdir
                                 Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
                                 Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
-                                if ($conf){
+                                if ($conf) {
                                     Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
                                     Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
                                 }
-                            }  else {
+                            } else {
                                 Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath\$Subdir
                                 Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
-                                if ($conf){Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $Subdir\alsoft.ini}
+                                if ($conf) {
+                                    Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
+                                }
                             }
                     }
-                if ($conf){
+                if ($conf) {
                     Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
                 }
                 $MenuGauche.Items.Remove($x)
@@ -412,19 +462,19 @@ $BoutonTransmut.add_Click({
     }
  })
 
-#Button Untransmut, remove Dsound files and refresh each listview (sort by name)
+#Button Untransmut, remove files from gamepath and refresh listview (sort by name)
 $BoutonUnTransmut.add_Click({
     $x = $Menudroite.SelectedItem
-    foreach ($game in $script:jeutrouve){
-        if ($x -eq $game.Name){
+    foreach ($game in $script:jeutrouve) {
+        if ($x -eq $game.Name) {
             $gamepath = $game.Gamepath
             $SubDir = $game.SubDir
             $RootDirInstallOption = $game.RootDirInstallOption
-            if ([string]::IsNullOrEmpty($Subdir)){
+            if ([string]::IsNullOrEmpty($Subdir)) {
                 Remove-Item "$gamepath\dsoal-aldrv.dll"
                 if (test-path "$gamepath\dsound.dll") { Remove-Item "$gamepath\dsound.dll" }
                 if (test-path "$gamepath\alsoft.ini") { Remove-Item "$gamepath\alsoft.ini" }				
-            } elseif ($RootDirInstallOption -eq "True"){
+            } elseif ($RootDirInstallOption -eq "True") {
                 Remove-Item "$gamepath\dsoal-aldrv.dll"	
                 if (test-path "$gamepath\dsound.dll") { Remove-Item "$gamepath\dsound.dll" }
                 if (test-path "$gamepath\alsoft.ini") { Remove-Item "$gamepath\alsoft.ini" }	
@@ -443,11 +493,11 @@ $BoutonUnTransmut.add_Click({
     }
 })
 
-### EDIT BUTTON, Check each mandatory info, add then to global var and edit Dsoal_alchemy file entry.
+### EDIT BUTTON, Check each mandatory info, add them to global var, and update Dsoal_alchemy file entry.
 $BoutonEdition.add_Click({
     $x = $MenuGauche.SelectedItem
     if (!($x -eq $null)) {
-        [xml]$InputXML =@"
+        [xml]$InputXML = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         Height="361" Width="557" MinHeight="361" MinWidth="557" VerticalAlignment="Bottom" ResizeMode="CanResizeWithGrip">
     <Viewbox Stretch="Uniform" StretchDirection="UpOnly">
@@ -472,123 +522,121 @@ $BoutonEdition.add_Click({
     </Viewbox>
 </Window>
 "@
-        $reader=(New-Object System.Xml.XmlNodeReader $inputXML)
-        $Window_edit =[Windows.Markup.XamlReader]::Load( $reader )
+        $reader = (New-Object System.Xml.XmlNodeReader $inputXML)
+        $Window_edit = [Windows.Markup.XamlReader]::Load( $reader )
         $inputXML.SelectNodes("//*[@Name]") | Foreach-Object { Set-Variable -Name ($_.Name) -Value $Window_edit.FindName($_.Name)}
 
-        $T_Titrejeu.IsReadOnly=$true
+        $T_Titrejeu.IsReadOnly = $true
         $T_Titrejeu.Background = '#e5e5e5'
-
-        $Window_edit.Title=$txt.MainTitle2    
+        $Window_edit.Title = $txt.MainTitle2    
         $C_Gamepath.Content = $txt.C_GamepathContent
-        $C_registre.Content=$txt.C_registreContent
+        $C_registre.Content = $txt.C_registreContent
         $T_registre.ToolTip = $txt.T_registreToolTip
-        $T_Gamepath.ToolTip= $txt.T_GamepathToolTip
+        $T_Gamepath.ToolTip = $txt.T_GamepathToolTip
         $C_SubDir.Content = $txt.C_SubDirContent
         $T_Subdir.ToolTip = $txt.T_SubdirToolTip
-        $C_Rootdir.Content=$txt.C_RootdirContent
-        $C_Conf.Content=$txt.C_ConfContent
-        $C_Conf.Tooltip=$txt.C_ConfTooltip
-        $C_x64.Content=$txt.C_x64Content
-        $C_x64.ToolTip=$txt.C_x64ToolTip
-        $L_GameTitle.Content=$txt.L_GameTitleContent
-        $B_Cancel.Content=$txt.B_CancelContent
-        $B_ok.Content=$txt.B_OkContent
-        $C_ListConf.visibility="Hidden"
+        $C_Rootdir.Content = $txt.C_RootdirContent
+        $C_Conf.Content = $txt.C_ConfContent
+        $C_Conf.Tooltip = $txt.C_ConfTooltip
+        $C_x64.Content = $txt.C_x64Content
+        $C_x64.ToolTip = $txt.C_x64ToolTip
+        $L_GameTitle.Content = $txt.L_GameTitleContent
+        $B_Cancel.Content = $txt.B_CancelContent
+        $B_ok.Content = $txt.B_OkContent
+        $C_ListConf.visibility = "Hidden"
 
         $C_Registre.Add_Checked({
-            $T_Registre.IsReadOnly=$False
+            $T_Registre.IsReadOnly = $False
             $T_Registre.Background = '#ffffff'
-            $B_GamePath.IsEnabled=$False
-            $T_Gamepath.IsReadOnly=$true
+            $B_GamePath.IsEnabled = $False
+            $T_Gamepath.IsReadOnly = $true
             $T_Gamepath.Background = '#e5e5e5'
         })
         $C_Gamepath.Add_Checked({
-            $T_Registre.IsReadOnly=$true
+            $T_Registre.IsReadOnly = $true
             $T_Registre.Background = '#e5e5e5'
-            $T_Gamepath.IsReadOnly=$False
+            $T_Gamepath.IsReadOnly = $False
             $T_Gamepath.Background = '#ffffff'
-            $B_GamePath.IsEnabled=$True
+            $B_GamePath.IsEnabled = $True
         })
         $C_SubDir.Add_Checked({
-            $T_SubDir.IsReadOnly=$False
+            $T_SubDir.IsReadOnly = $False
             $T_SubDir.Background = '#ffffff'
             $C_Rootdir.Background = '#ffffff'
-            $C_Rootdir.IsEnabled=$true
-            $B_SubDir.IsEnabled=$True
+            $C_Rootdir.IsEnabled = $true
+            $B_SubDir.IsEnabled = $True
         })
         $C_SubDir.Add_UnChecked({
-            $T_SubDir.IsReadOnly=$True
+            $T_SubDir.IsReadOnly = $True
             $T_SubDir.Background = '#e5e5e5'
             $C_Rootdir.Background = '#e5e5e5'
-            $C_Rootdir.IsChecked=$False
-            $B_SubDir.IsEnabled=$False
-            $C_Rootdir.IsEnabled=$False
+            $C_Rootdir.IsChecked = $False
+            $B_SubDir.IsEnabled = $False
+            $C_Rootdir.IsEnabled = $False
         })
         $C_Conf.Add_Checked({
-            $C_ListConf.visibility="Visible"
+            $C_ListConf.visibility = "Visible"
             Update-Conf
         })
         
         $C_Conf.Add_UnChecked({
-            $C_ListConf.visibility="Hidden"
+            $C_ListConf.visibility = "Hidden"
         })
 
     ## RETREIVE EDIT FORM VALUES
         $count = 0
         $found = 0
-        foreach ($game in $script:jeutrouve){
-            if ($x -eq $game.Name){
+        foreach ($game in $script:jeutrouve) {
+            if ($x -eq $game.Name) {
                 $found = 1
                 $T_titrejeu.text = $game.Name
                 $T_Subdir.text = $game.Subdir
                 $RootDirInstallOption = $game.RootDirInstallOption
                 $x64 = $game.x64
-                $Conf=$game.conf
+                $Conf = $game.conf
 
-                if ([string]::IsNullOrEmpty($game.RegPath)){
+                if ([string]::IsNullOrEmpty($game.RegPath)) {
                     $T_Gamepath.text = $game.Gamepath
                     $T_Registre.IsReadOnly=$true
                     $T_Registre.Background = '#e5e5e5'
-                    $C_GamePath.IsChecked=$true
+                    $C_GamePath.IsChecked = $true
                 } else{
                     $T_registre.text = $game.RegPath
-                    $T_Gamepath.IsReadOnly=$true
+                    $T_Gamepath.IsReadOnly = $true
                     $T_Gamepath.Background = '#e5e5e5'
-                    $B_GamePath.IsEnabled=$False
-                    $C_Registre.IsChecked=$True
+                    $B_GamePath.IsEnabled = $False
+                    $C_Registre.IsChecked = $True
                 }
-                if ($x64 -eq "True"){
+                if ($x64 -eq "True") {
                     $C_x64.IsChecked = $True
-                }else {
+                } else {
                     $C_x64.IsChecked = $False
                 }
-                if ($conf){
-                    Update-Conf
+                if ($conf) {
                     $C_Conf.IsChecked = $True
                     $C_ListConf.SelectedItem = $game.conf
-                }else {
+                } else {
                     $C_Conf.IsChecked = $False
                 }
-                if ([string]::IsNullOrEmpty($T_Subdir.text)){
-                    $T_SubDir.IsReadOnly=$True
+                if ([string]::IsNullOrEmpty($T_Subdir.text)) {
+                    $T_SubDir.IsReadOnly = $True
                     $T_SubDir.Background = '#e5e5e5'
-                    $C_Rootdir.IsEnabled=$False
+                    $C_Rootdir.IsEnabled = $False
                     $C_Rootdir.Background = '#e5e5e5'
-                    $B_SubDir.IsEnabled=$False
-                    $C_SubDir.IsChecked=$False
-                    $C_Rootdir.IsChecked=$False
-                }else{
-                    $C_SubDir.Ischecked= $true
-                    $C_Rootdir.IsEnabled=$true
-                    if ($RootDirInstallOption -eq "True"){
-                        $C_Rootdir.IsChecked=$True
+                    $B_SubDir.IsEnabled = $False
+                    $C_SubDir.IsChecked = $False
+                    $C_Rootdir.IsChecked = $False
+                } else {
+                    $C_SubDir.Ischecked = $true
+                    $C_Rootdir.IsEnabled =$true
+                    if ($RootDirInstallOption -eq "True") {
+                        $C_Rootdir.IsChecked = $True
                     } else {
-                        $C_Rootdir.IsChecked=$False
+                        $C_Rootdir.IsChecked = $False
                     }
                 }
             } else {
-                if ($found -ne 1){
+                if ($found -ne 1) {
                     $count = $count +1
                 }
             }
@@ -602,7 +650,7 @@ $BoutonEdition.add_Click({
             if ($C_Gamepath.IsChecked) {
                 $foldername.SelectedPath = $T_Gamepath.text
             }
-            if($foldername.ShowDialog() -eq "OK")
+            if ($foldername.ShowDialog() -eq "OK")
             {
                 $T_Gamepath.text = $foldername.SelectedPath
             }
@@ -610,14 +658,14 @@ $BoutonEdition.add_Click({
 
     ## CLICK ON SUBDIR BUTTON (EDIT FORM)
         $B_SubDir.add_Click({
-            $fail=$False
+            $fail = $False
             if ($C_registre.IsChecked) {
                     $b = $T_Registre.Text
-                    if (![string]::IsNullOrEmpty($b)){
+                    if (![string]::IsNullOrEmpty($b)) {
                         if ($b -like "HKEY_LOCAL_MACHINE*") {
                             $b = $b.replace("HKEY_LOCAL_MACHINE","HKLM:")
                         } else {
-                            if($b -like "HKEY_CURRENT_USER*") {
+                            if ($b -like "HKEY_CURRENT_USER*") {
                             $b = $b.replace("HKEY_CURRENT_USER","HKCU:")
                             } else {
                                 $fail = $True
@@ -628,16 +676,16 @@ $BoutonEdition.add_Click({
                             $fail = $True
                             [System.Windows.MessageBox]::Show($txt.RegKeyEmpty,"",0,64)
                     }
-                    if ($fail -eq $False){            
+                    if ($fail -eq $False) {            
                         #retreive registry key
                         $regkey = $b|split-path -leaf
                         #remove registry key from registry link"
                         $b = $b.replace("\$regkey","")
-                        if (!(test-path $b)){
-                            $b=$b.replace("HKLM:\SOFTWARE","HKLM:\SOFTWARE\WOW6432Node")
-                            $b=$b.replace("HKCU:\SOFTWARE","HKCU:\SOFTWARE\WOW6432Node")
+                        if (!(test-path $b)) {
+                            $b = $b.replace("HKLM:\SOFTWARE","HKLM:\SOFTWARE\WOW6432Node")
+                            $b = $b.replace("HKCU:\SOFTWARE","HKCU:\SOFTWARE\WOW6432Node")
                         }
-                        if (test-path $b){
+                        if (test-path $b) {
                             try { $Gamepath = Get-ItemPropertyvalue -Path $b -name $regkey
                             }
                             catch {
@@ -645,7 +693,7 @@ $BoutonEdition.add_Click({
                                 $fail = $true
                             }
                             if ($fail -eq $False) {
-                                if (!(test-path $Gamepath)){
+                                if (!(test-path $Gamepath)) {
                                     [System.Windows.MessageBox]::Show($txt.RegKeyValInc,"",0,48)
                                     $fail = $true
                                 }
@@ -657,13 +705,13 @@ $BoutonEdition.add_Click({
                     }
             } else {
                     $Gamepath = $T_Gamepath.text
-                    if ([string]::IsNullOrEmpty($Gamepath)){
+                    if ([string]::IsNullOrEmpty($Gamepath)) {
                         $fail = $True
                         [System.Windows.MessageBox]::Show($txt.PathEmpty,"",0,64)
                     }
             }
             if ($fail -eq $False) {
-                if (!(test-path $Gamepath)){
+                if (!(test-path $Gamepath)) {
                     [System.Windows.MessageBox]::Show($txt.BadPath,"",0,48)
                     $fail = $true
                 }
@@ -671,11 +719,11 @@ $BoutonEdition.add_Click({
                     $foldername = New-Object System.Windows.Forms.FolderBrowserDialog
                     $foldername.Description = $txt.SubFolderChoice
                     $foldername.SelectedPath = $Gamepath
-                    if($foldername.ShowDialog() -eq "OK"){
+                    if ($foldername.ShowDialog() -eq "OK") {
                         $Subdir = $foldername.SelectedPath
                         $Subdir = $Subdir -ireplace[regex]::Escape("$Gamepath"),""
                         $Subdir = $Subdir.Trimstart("\")
-                        if (test-path $Gamepath\$Subdir){
+                        if (test-path $Gamepath\$Subdir) {
                             $T_Subdir.text = $Subdir
                         } else { 
                             [System.Windows.MessageBox]::Show($txt.BadPathOrSub,"",0,48)
@@ -700,7 +748,7 @@ $BoutonEdition.add_Click({
                     if ($b -like "HKEY_LOCAL_MACHINE*") {
                         $b = $b.replace("HKEY_LOCAL_MACHINE","HKLM:")
                     } else {
-                            if($b -like "HKEY_CURRENT_USER*") {
+                            if ($b -like "HKEY_CURRENT_USER*") {
                                 $b = $b.replace("HKEY_CURRENT_USER","HKCU:")
                             }
                         }        
@@ -708,11 +756,11 @@ $BoutonEdition.add_Click({
                     $regkey = $b|split-path -leaf
                     #"supprimer clef du lien registre"
                     $b = $b.replace("\$regkey","")
-                    if (!(test-path $b)){
-                    $b=$b.replace("HKLM:\SOFTWARE","HKLM:\SOFTWARE\WOW6432Node")
-                    $b=$b.replace("HKCU:\SOFTWARE","HKCU:\SOFTWARE\WOW6432Node")
+                    if (!(test-path $b)) {
+                    $b = $b.replace("HKLM:\SOFTWARE","HKLM:\SOFTWARE\WOW6432Node")
+                    $b = $b.replace("HKCU:\SOFTWARE","HKCU:\SOFTWARE\WOW6432Node")
                     }
-                    if (test-path $b){
+                    if (test-path $b) {
                         try { $Gamepath = Get-ItemPropertyvalue -Path $b -name $regkey
                         }
                         catch {
@@ -720,7 +768,7 @@ $BoutonEdition.add_Click({
                             [System.Windows.MessageBox]::Show($txt.RegKeyInc,"",0,48)
                         }
                         if ($fail -eq $False) {
-                            if (!(test-path $Gamepath)){
+                            if (!(test-path $Gamepath)) {
                                 [System.Windows.MessageBox]::Show($txt.RegKeyValInc,"",0,48)
                                 $fail = $true
                             } else {
@@ -738,29 +786,29 @@ $BoutonEdition.add_Click({
                 }
             } else {
                 $Gamepath = $T_Gamepath.text
-                if ([string]::IsNullOrEmpty($Gamepath)){ 
+                if ([string]::IsNullOrEmpty($Gamepath)) { 
                             $fail = $true
                             [System.Windows.MessageBox]::Show($txt.PathEmpty,"",0,64)
                     }
             }
             if ($fail -eq $False) {
                 $Gamepath = $Gamepath.TrimEnd("\")
-                if (![string]::IsNullOrEmpty($Gamepath)){
-                    if (!(test-path $Gamepath)){
+                if (![string]::IsNullOrEmpty($Gamepath)) {
+                    if (!(test-path $Gamepath)) {
                         $fail = $true
                         [System.Windows.MessageBox]::Show($txt.BadPath,"",0,48)
                     } 
                 }
             }
-            if ($C_SubDir.IsChecked -and $fail -eq $false){
+            if ($C_SubDir.IsChecked -and $fail -eq $false) {
                 $Subdir = $T_Subdir.text
-                if (!(test-path $Gamepath\$Subdir)){
+                if (!(test-path $Gamepath\$Subdir)) {
                     $fail = $true
                     [System.Windows.MessageBox]::Show($txt.SubNotFound,"",0,48)
                 } 
             }
             # Test if no error
-            if ($fail -eq $False){
+            if ($fail -eq $False) {
 
                 # Prepare Game value to write
                 $Name = $T_titrejeu.text
@@ -769,39 +817,38 @@ $BoutonEdition.add_Click({
                 } else {
                     $x64 = "False"
                 }
-                if ($C_Rootdir.IsChecked){
-                    $RootDirInstallOption="True"
+                if ($C_Rootdir.IsChecked) {
+                    $RootDirInstallOption = "True"
                 } else {
-                    $RootDirInstallOption="False"
+                    $RootDirInstallOption = "False"
                 }
-                if ($C_SubDir.IsUnChecked){
-                    $SubDir=""
-                    $RootDirInstallOption="False"
+                if ($C_SubDir.IsUnChecked) {
+                    $SubDir = ""
+                    $RootDirInstallOption = "False"
                 }
-                if ($C_Conf.IsChecked){
-                    $Conf=$C_ListConf.SelectedItem
+                if ($C_Conf.IsChecked) {
+                    $Conf = $C_ListConf.SelectedItem
                 } else {
-                    $Conf=""
+                    $Conf = ""
                 }
                 
                 # Update list game to reflect change    
-                $script:jeutrouve[$count].RegPath=$RegPath
-                $script:jeutrouve[$count].Gamepath=$Gamepath
-                $script:jeutrouve[$count].MaxVoiceCount=$Voice
-                $script:jeutrouve[$count].SubDir=$Subdir
-                $script:jeutrouve[$count].RootDirInstallOption=$RootDirInstallOption
-                $script:jeutrouve[$count].x64=$x64
-                $script:jeutrouve[$count].Conf=$Conf
+                $script:jeutrouve[$count].RegPath = $RegPath
+                $script:jeutrouve[$count].Gamepath = $Gamepath
+                $script:jeutrouve[$count].SubDir = $Subdir
+                $script:jeutrouve[$count].RootDirInstallOption = $RootDirInstallOption
+                $script:jeutrouve[$count].x64 = $x64
+                $script:jeutrouve[$count].Conf = $Conf
                 
                 # Write change in file
                 $file = Get-content "$PSScriptRoot\Dsoal_alchemy.ini"
-                $LineNumber = Select-String -pattern ([regex]::Escape("[$Name]")) $PSScriptRoot\Dsoal_alchemy.ini| Select-Object -ExpandProperty LineNumber
+                $LineNumber = Select-String -pattern ([regex]::Escape("[$Name]")) $PSScriptRoot\Dsoal_alchemy.ini | Select-Object -ExpandProperty LineNumber
                 if ($regprio -eq $true) {
                     $file[$LineNumber] = "RegPath=$RegPath"
-                    $file[$LineNumber +1]="GamePath="
-                }else{
+                    $file[$LineNumber +1] = "GamePath="
+                } else {
                     $file[$LineNumber] = "RegPath="
-                    $file[$LineNumber +1]="GamePath=$Gamepath" 
+                    $file[$LineNumber +1] = "GamePath=$Gamepath" 
                 }
                 $file[$LineNumber +2] = "SubDir=$Subdir" 
                 $file[$LineNumber +3] = "RootDirInstallOption=$RootDirInstallOption"
@@ -818,7 +865,7 @@ $BoutonEdition.add_Click({
 
 ### ADD BUTTON (MAIN FORM)
 $BoutonAjouter.add_Click({
-    [xml]$InputXML =@"
+    [xml]$InputXML = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         Height="361" Width="557" MinHeight="361" MinWidth="557" VerticalAlignment="Bottom" ResizeMode="CanResizeWithGrip">
     <Viewbox Stretch="Uniform" StretchDirection="UpOnly">
@@ -843,88 +890,88 @@ $BoutonAjouter.add_Click({
     </Viewbox>
 </Window>
 "@
-    $reader=(New-Object System.Xml.XmlNodeReader $inputXML)
-    $Window_add =[Windows.Markup.XamlReader]::Load( $reader )
+    $reader = (New-Object System.Xml.XmlNodeReader $inputXML)
+    $Window_add = [Windows.Markup.XamlReader]::Load( $reader )
     $inputXML.SelectNodes("//*[@Name]") | Foreach-Object { Set-Variable -Name ($_.Name) -Value $Window_add.FindName($_.Name)}
     
     # WPF Content, tooltip values
-    $Window_add.Title=$txt.MainTitle2    
+    $Window_add.Title = $txt.MainTitle2    
     $C_Gamepath.Content = $txt.C_GamepathContent
-    $C_registre.Content=$txt.C_registreContent
+    $C_registre.Content = $txt.C_registreContent
     $T_registre.ToolTip = $txt.T_registreToolTip
-    $T_Gamepath.ToolTip= $txt.T_GamepathToolTip
+    $T_Gamepath.ToolTip = $txt.T_GamepathToolTip
     $C_SubDir.Content = $txt.C_SubDirContent
     $T_Subdir.ToolTip = $txt.T_SubdirToolTip
-    $C_Rootdir.Content=$txt.C_RootdirContent
-    $C_Conf.Tooltip=$txt.C_ConfTooltip
-    $C_Conf.Content=$txt.C_ConfContent
-    $C_x64.Content=$txt.C_x64Content
-    $C_x64.ToolTip=$txt.C_x64ToolTip
-    $L_GameTitle.Content=$txt.L_GameTitleContent
-    $B_Cancel.Content=$txt.B_CancelContent
-    $B_ok.Content=$txt.B_OkContent
+    $C_Rootdir.Content = $txt.C_RootdirContent
+    $C_Conf.Tooltip = $txt.C_ConfTooltip
+    $C_Conf.Content = $txt.C_ConfContent
+    $C_x64.Content = $txt.C_x64Content
+    $C_x64.ToolTip = $txt.C_x64ToolTip
+    $L_GameTitle.Content = $txt.L_GameTitleContent
+    $B_Cancel.Content = $txt.B_CancelContent
+    $B_ok.Content = $txt.B_OkContent
 
     # Default value
-    $T_Gamepath.MaxLines=1
-    $T_registre.MaxLines=1
-    $C_registre.IsChecked=$true
-    $C_SubDir.IsChecked=$False
-    $T_SubDir.IsReadOnly=$True
-    $T_SubDir.Background='#e5e5e5'
-    $C_Rootdir.IsChecked=$false
-    $C_Rootdir.IsEnabled=$False
+    $T_Gamepath.MaxLines = 1
+    $T_registre.MaxLines = 1
+    $C_registre.IsChecked = $true
+    $C_SubDir.IsChecked = $False
+    $T_SubDir.IsReadOnly = $True
+    $T_SubDir.Background = '#e5e5e5'
+    $C_Rootdir.IsChecked = $false
+    $C_Rootdir.IsEnabled = $False
     $C_Rootdir.Background = '#e5e5e5'
-    $B_SubDir.IsEnabled=$False
+    $B_SubDir.IsEnabled = $False
     $C_x64.IsChecked = $False
-    $T_Registre.IsReadOnly=$False
+    $T_Registre.IsReadOnly = $False
     $T_Registre.Background = '#ffffff'
-    $B_GamePath.IsEnabled=$False
-    $T_Gamepath.IsReadOnly=$true
+    $B_GamePath.IsEnabled = $False
+    $T_Gamepath.IsReadOnly = $true
     $T_Gamepath.Background = '#e5e5e5'
-    $C_ListConf.visibility="Hidden"
+    $C_ListConf.visibility = "Hidden"
  
     $C_Registre.Add_Checked({
-        $T_Registre.IsReadOnly=$False
+        $T_Registre.IsReadOnly = $False
         $T_Registre.Background = '#ffffff'
-        $B_GamePath.IsEnabled=$False
-        $T_Gamepath.IsReadOnly=$true
+        $B_GamePath.IsEnabled = $False
+        $T_Gamepath.IsReadOnly = $true
         $T_Gamepath.Background = '#e5e5e5'
     })
 
     $C_Gamepath.Add_Checked({
-        $T_Registre.IsReadOnly=$true
+        $T_Registre.IsReadOnly = $true
         $T_Registre.Background = '#e5e5e5'
-        $T_Gamepath.IsReadOnly=$False
+        $T_Gamepath.IsReadOnly = $False
         $T_Gamepath.Background = '#ffffff'
-        $B_GamePath.IsEnabled=$True
+        $B_GamePath.IsEnabled = $True
     })
 
     $C_SubDir.Add_Checked({
-        $T_SubDir.IsReadOnly=$False
+        $T_SubDir.IsReadOnly = $False
         $T_SubDir.Background = '#ffffff'
-        $C_Rootdir.IsEnabled=$True
+        $C_Rootdir.IsEnabled = $True
         $C_Rootdir.Background = '#ffffff'
-        $B_SubDir.IsEnabled=$True
-        $C_Rootdir.IsEnabled=$true
+        $B_SubDir.IsEnabled = $True
+        $C_Rootdir.IsEnabled = $true
     })
 
     $C_SubDir.Add_UnChecked({
-        $T_SubDir.IsReadOnly=$True
+        $T_SubDir.IsReadOnly = $True
         $T_SubDir.Background = '#e5e5e5'
-        $C_Rootdir.IsEnabled=$False
+        $C_Rootdir.IsEnabled = $False
         $C_Rootdir.Background = '#e5e5e5'
-        $B_SubDir.IsEnabled=$False
-        $C_Rootdir.IsEnabled=$False
-        $C_Rootdir.IsChecked=$False
+        $B_SubDir.IsEnabled = $False
+        $C_Rootdir.IsEnabled = $False
+        $C_Rootdir.IsChecked = $False
     })
 
     $C_Conf.Add_Checked({
-        $C_ListConf.visibility="Visible"
+        $C_ListConf.visibility = "Visible"
         Update-Conf
     })
 
     $C_Conf.Add_UnChecked({
-        $C_ListConf.visibility="Hidden"
+        $C_ListConf.visibility = "Hidden"
     })
 
 ## CLICK ON GAMEPATH BUTTON (ADD FORM)
@@ -936,7 +983,7 @@ $BoutonAjouter.add_Click({
         if ($C_Gamepath.IsChecked) {
             $foldername.SelectedPath = $T_Gamepath.text
         }
-        if($foldername.ShowDialog() -eq "OK")
+        if ($foldername.ShowDialog() -eq "OK")
         {
             $T_Gamepath.text = $foldername.SelectedPath
         }
@@ -947,11 +994,11 @@ $BoutonAjouter.add_Click({
         $fail = $false
         if ($C_registre.IsChecked) {
             $b = $T_Registre.Text
-            if (![string]::IsNullOrEmpty($b)){
+            if (![string]::IsNullOrEmpty($b)) {
                 if ($b -like "HKEY_LOCAL_MACHINE*") {
                     $b = $b.replace("HKEY_LOCAL_MACHINE","HKLM:")
                 } else {
-                        if($b -like "HKEY_CURRENT_USER*") {
+                        if ($b -like "HKEY_CURRENT_USER*") {
                             $b = $b.replace("HKEY_CURRENT_USER","HKCU:")
                         } else {
                             $fail = $True
@@ -967,11 +1014,11 @@ $BoutonAjouter.add_Click({
                 $regkey = $b|split-path -leaf
                 #remove registry key from registry path
                 $b = $b.replace("\$regkey","")
-                if (!(test-path $b)){
-                $b=$b.replace("HKLM:\SOFTWARE","HKLM:\SOFTWARE\WOW6432Node")
-                $b=$b.replace("HKCU:\SOFTWARE","HKCU:\SOFTWARE\WOW6432Node")
+                if (!(test-path $b)) {
+                $b = $b.replace("HKLM:\SOFTWARE","HKLM:\SOFTWARE\WOW6432Node")
+                $b = $b.replace("HKCU:\SOFTWARE","HKCU:\SOFTWARE\WOW6432Node")
                 }
-                if (test-path $b){
+                if (test-path $b) {
                     try { $Gamepath = Get-ItemPropertyvalue -Path $b -name $regkey
                     }
                     catch {
@@ -979,7 +1026,7 @@ $BoutonAjouter.add_Click({
                         [System.Windows.MessageBox]::Show($txt.RegKeyInc,"",0,48)
                     }
                     if ($fail -eq $False) {
-                        if (!(test-path $Gamepath)){
+                        if (!(test-path $Gamepath)) {
                             [System.Windows.MessageBox]::Show($txt.RegKeyValInc,"",0,48)
                             $fail = $True
                         }
@@ -991,23 +1038,23 @@ $BoutonAjouter.add_Click({
             }
         } else {
             $Gamepath = $T_Gamepath.text
-            if ([string]::IsNullOrEmpty($Gamepath)){ 
+            if ([string]::IsNullOrEmpty($Gamepath)) { 
                 $fail = $true
                 [System.Windows.MessageBox]::Show($txt.PathEmpty,"",0,64)
             }
         }
         if ($fail -eq $False) {
-            if (!(test-path $Gamepath)){
+            if (!(test-path $Gamepath)) {
                 [System.Windows.MessageBox]::Show($txt.BadPath,"",0,48)
             } else {        
                 $foldername = New-Object System.Windows.Forms.FolderBrowserDialog
                 $foldername.Description = $txt.SubFolderChoice
                 $foldername.SelectedPath = $Gamepath
-                if($foldername.ShowDialog() -eq "OK"){
+                if ($foldername.ShowDialog() -eq "OK") {
                     $Subdir = $foldername.SelectedPath
                     $Subdir = $Subdir -ireplace[regex]::Escape("$Gamepath"),""
                     $Subdir = $Subdir.Trimstart("\")
-                    if (test-path $Gamepath\$Subdir){
+                    if (test-path $Gamepath\$Subdir) {
                         $T_Subdir.text = $Subdir
                     } else { 
                         [System.Windows.MessageBox]::Show($txt.BadPathOrSub,"",0,48)
@@ -1027,13 +1074,13 @@ $BoutonAjouter.add_Click({
         $b = $T_Registre.Text
         $x = $T_titrejeu.Text
 
-        foreach ($game in $script:listejeux){
-            if ($x -eq $game.name){
+        foreach ($game in $script:listejeux) {
+            if ($x -eq $game.name) {
                 $fail = $true
                 [System.Windows.MessageBox]::Show($txt.TitleExist,"",0,64)
             }
         }
-        if ([string]::IsNullOrEmpty($x)){
+        if ([string]::IsNullOrEmpty($x)) {
             $fail = $true
             [System.Windows.MessageBox]::Show($txt.TitleMiss,"",0,64)
         }
@@ -1042,25 +1089,25 @@ $BoutonAjouter.add_Click({
                 if ($b -like "HKEY_LOCAL_MACHINE*") {
                     $b = $b.replace("HKEY_LOCAL_MACHINE","HKLM:")
                 } else {
-                        if($b -like "HKEY_CURRENT_USER*") {
+                        if ($b -like "HKEY_CURRENT_USER*") {
                             $b = $b.replace("HKEY_CURRENT_USER","HKCU:")
                         }
                     } 
                 $regkey = $b|split-path -leaf
                 $b = $b.replace("\$regkey","")
-                if (!(test-path $b)){
-                    $b=$b.replace("HKLM:\SOFTWARE","HKLM:\SOFTWARE\WOW6432Node")
-                    $b=$b.replace("HKCU:\SOFTWARE","HKCU:\SOFTWARE\WOW6432Node")
+                if (!(test-path $b)) {
+                    $b = $b.replace("HKLM:\SOFTWARE","HKLM:\SOFTWARE\WOW6432Node")
+                    $b = $b.replace("HKCU:\SOFTWARE","HKCU:\SOFTWARE\WOW6432Node")
                 }
-                if (test-path $b){
+                if (test-path $b) {
                     try { $Gamepath = Get-ItemPropertyvalue -Path $b -name $regkey
                     }
                     catch {
                         $fail = $true
                         [System.Windows.MessageBox]::Show($txt.RegKeyInc,"",0,48)
                     }
-                    if ($fail -eq $false){
-                        if (!(test-path $Gamepath)){
+                    if ($fail -eq $false) {
+                        if (!(test-path $Gamepath)) {
                             [System.Windows.MessageBox]::Show($txt.RegKeyValInc,"",0,48)
                             $fail = $true
                         }
@@ -1079,26 +1126,26 @@ $BoutonAjouter.add_Click({
             $Gamepath = $T_Gamepath.text
         }    
         if ($fail -eq $False) {
-            if ([string]::IsNullOrEmpty($Gamepath)){
+            if ([string]::IsNullOrEmpty($Gamepath)) {
                 $fail = $true
                 [System.Windows.MessageBox]::Show($txt.PathEmpty,"",0,64)
             }
             else {
-                if (!(test-path $Gamepath)){
+                if (!(test-path $Gamepath)) {
                         $fail = $true
                         [System.Windows.MessageBox]::Show($txt.BadPath,"",0,48)
                 }
             }
         }
-        if ($B_SubDir.IsEnabled -and $fail -eq $false){
+        if ($B_SubDir.IsEnabled -and $fail -eq $false) {
             $Subdir = $T_Subdir.text
-            if (!(test-path $Gamepath\$Subdir)){
+            if (!(test-path $Gamepath\$Subdir)) {
                 $fail = $true
                 [System.Windows.MessageBox]::Show($txt.SubNotFound,"",0,48)
             } 
         }
         # test if no error
-        if ($fail -eq $False){
+        if ($fail -eq $False) {
             # Value to write
             $Name = $T_titrejeu.text
             if ($C_x64.IsChecked) {
@@ -1106,43 +1153,43 @@ $BoutonAjouter.add_Click({
             } else {
                 $x64 = "False"
             }
-            if ($C_Rootdir.IsChecked){
-                $RootDirInstallOption="True"
+            if ($C_Rootdir.IsChecked) {
+                $RootDirInstallOption = "True"
             } else {
-                $RootDirInstallOption="False"
+                $RootDirInstallOption = "False"
             }
-            if ($C_SubDir.IsUnchecked){
-                $SubDir=""
-                $RootDirInstallOption="False"
+            if ($C_SubDir.IsUnchecked) {
+                $SubDir = ""
+                $RootDirInstallOption = "False"
             }
-            if ($C_Conf.IsChecked){
-                $Conf=$C_ListConf.SelectedItem
+            if ($C_Conf.IsChecked) {
+                $Conf = $C_ListConf.SelectedItem
             } else {
-                $Conf=""
+                $Conf = ""
             }
 
             # Write change in file, Registry first, Gamepath second choice
             if ($regprio -eq $true) {
                 $RegPath = $T_Registre.Text
-                $Gamepath=""
-            }else{
-                $RegPath=""
-                $Gamepath=$T_Gamepath.text
+                $Gamepath = ""
+            } else {
+                $RegPath = ""
+                $Gamepath = $T_Gamepath.text
             }
             "[$Name]`rRegPath=$RegPath`rGamePath=$Gamepath`rSubDir=$SubDir`rRootDirInstallOption=$RootDirInstallOption`rx64=$x64`rConf=$Conf`r`n"| Out-File -Append $PSScriptRoot\Dsoal_alchemy.ini -encoding ascii
 
             # Update list game to reflect change, Order listview by name
-            $script:listejeux += add-Game -Name $Name -RegPath $RegPath -Gamepath $Gamepath -SubDir $SubDir -RootDirInstallOption $RootDirInstallOption -x64 $x64 -Found $True -Transmut $False      
+            $script:listejeux += Add-Game -Name $Name -RegPath $RegPath -Gamepath $Gamepath -SubDir $SubDir -RootDirInstallOption $RootDirInstallOption -x64 $x64 -Found $True -Transmut $False      
             $script:jeutrouve = $script:listejeux | where-object Found -eq $True
-            checktransmut $script:jeutrouve | Out-Null
+            CheckTransmut $script:jeutrouve | Out-Null
             $jeutransmut = $script:jeutrouve | where-object Transmut -eq $true
             $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.Transmut -eq $False}
             $MenuGauche.Items.Clear()
-            foreach ($jeu in $jeunontransmut){
+            foreach ($jeu in $jeunontransmut) {
                 $MenuGauche.Items.Add($jeu.name) | Out-Null
             }
             $MenuDroite.Items.Clear()
-            foreach ($jeu in $jeutransmut){
+            foreach ($jeu in $jeutransmut) {
                 $MenuDroite.Items.Add($jeu.name) | Out-Null
             }
             Sortlistview $MenuGauche
@@ -1158,23 +1205,23 @@ $BoutonParDefaut.add_Click({
     $choice = [System.Windows.MessageBox]::Show("$($txt.Defaultmsgbox)`r$($txt.Defaultmsgbox2)`r$(Get-Location)\Dsoal_alchemy.bak`r`r$($txt.Defaultmsgbox3)" , "Dsoal Alchemy" , 4,64)
     if ($choice -eq 'Yes') {
         move-Item "$PSScriptRoot\Dsoal_alchemy.ini" "$PSScriptRoot\Dsoal_alchemy.Bak" -force
-        if (Test-path -path $PSScriptRoot\alchemy.ini){
+        if (Test-path -path $PSScriptRoot\alchemy.ini) {
             GenerateNewAlchemy "$PathALchemy\Alchemy.ini"
         } else {
             Copy-item $PSScriptRoot\Games.template $PSScriptRoot\Dsoal_alchemy.ini
         }
-        $script:listejeux = read-file "$PSScriptRoot\Dsoal_alchemy.ini"
-        checkinstall $script:listejeux | Out-Null
+        $script:listejeux = Read-File "$PSScriptRoot\Dsoal_alchemy.ini"
+        CheckInstall $script:listejeux | Out-Null
         $script:jeutrouve = $script:listejeux | where-object Found -eq $true
-        checktransmut $script:jeutrouve | Out-Null
+        CheckTransmut $script:jeutrouve | Out-Null
         $jeutransmut = $script:jeutrouve | where-object Transmut -eq $true
         $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.Transmut -eq $False}
         $MenuGauche.Items.Clear()
-        foreach ($jeu in $jeunontransmut){
+        foreach ($jeu in $jeunontransmut) {
             $MenuGauche.Items.Add($jeu.name) | Out-Null
         }
         $MenuDroite.Items.Clear()
-        foreach ($jeu in $jeutransmut){
+        foreach ($jeu in $jeutransmut) {
             $MenuDroite.Items.Add($jeu.name) | Out-Null
         }
     }
