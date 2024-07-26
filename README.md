@@ -14,7 +14,7 @@ OpenAlsoft : https://github.com/kcat/openal-soft binaries.<br>
 DSOAL : https://github.com/kcat/dsoal binaries.
 
 <p>Note 32 & 64 bits binaries of DSOAL could be found at https://ci.appveyor.com/project/ChrisRobinson/dsoal<br>
-Click on the correct job (x86 'Win32' or x64 'Win64') -> artefact -> Click on dsoal.zip to download</p>
+Click on the correct job (x86 'Win32' or x64) -> artefact -> Click on dsoal.zip to download it</p>
 
 ## Installation
 
