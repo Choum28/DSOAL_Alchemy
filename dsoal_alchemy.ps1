@@ -129,39 +129,28 @@ function Read-File {
     foreach ( $line in $list ) {
         $Number = $Number + 1
         if ($line -notlike ';*') {
-
-            if ($line -like '`[*') {
-            if ($test -gt 0) {
-                    $liste += Add-Game -Name $Name -RegPath $RegPath -Gamepath $Gamepath -SubDir $SubDir -RootDirInstallOption $RootDirInstallOption -x64 $x64 -Conf $Conf -Found $Found -Transmut $Transmut
-                    $RegPath = ""
-                    $Gamepath = ""
-                    $SubDir = ""
-                    $RootDirInstallOption = "False"
-                    $x64 = "False"
-                    $Conf = ""
-                    $Found = $false
-                    $Transmut = $false
-                }
-                $test = $test+1
-                $Name = $line -replace '[][]'
-            }
-            if ($line -like "RegPath=*") {
-                $RegPath = $line.replace("RegPath=","")
-            }
-            if ($line -like "GamePath=*") {
-                $Gamepath = $line.replace("GamePath=","")
-            }
-            if ($line -like "SubDir=*") {
-                $SubDir = $line.replace("SubDir=","")
-            }
-            if ($line -like "RootDirInstallOption=*") {
-                $RootDirInstallOption = $line.replace("RootDirInstallOption=","")
-            }
-            if ($line -like "x64=*") {
-                $x64 = $line.replace("x64=","")
-            }
-            if ($line -like "Conf=*") {
-                $Conf = $line.replace("Conf=","")
+            Switch -wildcard ($line) {
+                '`[*' {
+                        if ($test -gt 0) {
+                                $liste += Add-Game -Name $Name -RegPath $RegPath -Gamepath $Gamepath -SubDir $SubDir -RootDirInstallOption $RootDirInstallOption -x64 $x64 -Conf $Conf -Found $Found -Transmut $Transmut
+                                $RegPath = ""
+                                $Gamepath = ""
+                                $SubDir = ""
+                                $RootDirInstallOption = "False"
+                                $x64 = "False"
+                                $Conf = ""
+                                $Found = $false
+                                $Transmut = $false
+                        }
+                            $test = $test+1
+                            $Name = $line -replace '[][]'
+                   }
+                "RegPath=*" { $RegPath = $line.replace("RegPath=","") }
+                "GamePath=*" { $Gamepath = $line.replace("GamePath=","") }
+                "SubDir=*" { $SubDir = $line.replace("SubDir=","") }
+                "RootDirInstallOption=*" { $RootDirInstallOption = $line.replace("RootDirInstallOption=","") }
+                "x64=*" { $x64 = $line.replace("x64=","") }
+                "Conf=*" { $Conf = $line.replace("Conf=","") }
             }
         }
     }
@@ -343,7 +332,7 @@ $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.T
 # Main windows
 [xml]$inputXML = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        Title="Dsoal Alchemy" Height="417" Width="818" MinHeight="417" MinWidth="818" ResizeMode="CanResizeWithGrip" Icon="$PSScriptRoot\dsoal_alchemy.ico">
+        Title="Dsoal Alchemy" Height="417" Width="818" MinHeight="417" MinWidth="818" ResizeMode="CanResizeWithGrip">
     <Viewbox Stretch="Uniform" StretchDirection="UpOnly">
         <Grid>
             <ListView Name="MenuGauche" HorizontalAlignment="Left" Height="280" Margin="20,75,0,0" VerticalAlignment="Top" Width="310">
@@ -499,7 +488,7 @@ $BoutonEdition.add_Click({
     if (!($x -eq $null)) {
         [xml]$InputXML = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        Height="361" Width="557" MinHeight="361" MinWidth="557" VerticalAlignment="Bottom" ResizeMode="CanResizeWithGrip" Icon="$PSScriptRoot\dsoal_alchemy.ico">
+        Height="361" Width="557" MinHeight="361" MinWidth="557" VerticalAlignment="Bottom" ResizeMode="CanResizeWithGrip">
     <Viewbox Stretch="Uniform" StretchDirection="UpOnly">
     <Grid>
         <Label Name ="L_GameTitle" HorizontalAlignment="Left" Margin="67,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.526,0"/>
@@ -867,7 +856,7 @@ $BoutonEdition.add_Click({
 $BoutonAjouter.add_Click({
     [xml]$InputXML = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        Height="361" Width="557" MinHeight="361" MinWidth="557" VerticalAlignment="Bottom" ResizeMode="CanResizeWithGrip" Icon="$PSScriptRoot\dsoal_alchemy.ico">
+        Height="361" Width="557" MinHeight="361" MinWidth="557" VerticalAlignment="Bottom" ResizeMode="CanResizeWithGrip">
     <Viewbox Stretch="Uniform" StretchDirection="UpOnly">
     <Grid>
         <Label Name ="L_GameTitle" HorizontalAlignment="Left" Margin="67,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.526,0"/>
@@ -1202,7 +1191,7 @@ $BoutonAjouter.add_Click({
 
 ### Default Button (MAIN FORM)
 $BoutonParDefaut.add_Click({
-    $choice = [System.Windows.MessageBox]::Show("$($txt.Defaultmsgbox)`r$($txt.Defaultmsgbox2)`r$($PSScriptRoot)\Dsoal_alchemy.bak`r`r$($txt.Defaultmsgbox3)" , "Dsoal Alchemy" , 4,64)
+    $choice = [System.Windows.MessageBox]::Show("$($txt.Defaultmsgbox)`r$($txt.Defaultmsgbox2)`r$(Get-Location)\Dsoal_alchemy.bak`r`r$($txt.Defaultmsgbox3)" , "Dsoal Alchemy" , 4,64)
     if ($choice -eq 'Yes') {
         move-Item "$PSScriptRoot\Dsoal_alchemy.ini" "$PSScriptRoot\Dsoal_alchemy.Bak" -force
         if (Test-path -path $PSScriptRoot\alchemy.ini) {
