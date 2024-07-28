@@ -61,11 +61,11 @@ You can copy openalsoft configurations you want to use into the configs folder, 
 When the setting is selected in Dsoal_alchemy, the script will automatically copy the selected configuration as alsoft.ini into game folder(s).
 
 ## launch the script  
-Launch the script and hide console
+Create a shortcut with following command:
 
-***.\powershell.exe -WindowStyle Hidden -ep bypass -file "C:\script\Dsoal_alchemy.ps1"***
+***.\powershell.exe -WindowStyle Hidden -ep bypass -file "C:\XXXX\DSOAL_Alchemy-main\Dsoal_alchemy.ps1"***
 
-The script will create and use Dsoal_alchemy.ini to store games and options in the script folder.
+To remove the minimized windows behind the Gui, set in the properties of the shortcut Run=minimized
 
 ## How to use
 
@@ -82,6 +82,7 @@ arrow buttons to update them all.
 
 Buttons and checkbox have tooltip when you place your mouse cursor on them.
 
+The script will create and use Dsoal_alchemy.ini to store games and options in the script folder.
 
 <img src="https://i.imgur.com/3ZXPCkO.png">
 <img src="https://i.imgur.com/HZrG3Qv.png">
