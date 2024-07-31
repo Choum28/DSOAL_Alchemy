@@ -251,29 +251,55 @@ function CheckInstall{
 }
 
 # Check if game is transmuted (dsoal-aldrv.dll + dsound present)
-function CheckTransmut{ 
-    param (
+function checkTransmut{ 
+    param(
         $liste
     )
-
+    
     $test = 0
-    foreach ($game in $liste) {
-        $game.Transmut = $false
+    foreach ($game in $liste){
         $gamepath = $game.Gamepath
         $Subdir = $game.SubDir
-        if ([string]::IsNullOrEmpty($Subdir)) {
-            if (test-path ("$gamepath\dsoal-aldrv.dll")) {
-                if (test-path ("$gamepath\dsound.dll")) {
+        $RootDirInstallOption = $game.RootDirInstallOption
+        if ([string]::IsNullOrEmpty($Subdir)){
+            if ([System.IO.File]::Exists("$gamepath\dsoal-aldrv.dll")) {
+                if ([System.IO.File]::Exists("$gamepath\dsound.dll")) {
                     $game.Transmut = $true
+                } else {
+                    $game.Transmut = $false
                 }
+            } else {
+                $game.Transmut = $false
             }
-        } else {
-            if (test-path ("$gamepath\$Subdir\dsoal-aldrv.dll")) {
-                if (test-path ("$gamepath\$Subdir\dsound.dll")) {
+        } elseif ( $RootDirInstallOption -eq $False ) {
+            if ([System.IO.File]::Exists("$gamepath\$Subdir\dsoal-aldrv.dll")) {
+                if ([System.IO.File]::Exists("$gamepath\$Subdir\dsound.dll")) {
                     $game.Transmut = $true
+                } else {
+                    $game.Transmut = $false
                 }
+            } else {
+                $game.Transmut = $false
             }
-        }
+        } else { 
+                if ([System.IO.File]::Exists("$gamepath\dsoal-aldrv.dll")) {
+                    if ([System.IO.File]::Exists("$gamepath\dsound.dll")) {
+                        if ([System.IO.File]::Exists("$gamepath\$Subdir\dsoal-aldrv.dll")) {
+                            if ([System.IO.File]::Exists("$gamepath\$Subdir\dsound.dll")){
+                                $game.Transmut = $true 
+                            } else {
+                                $game.Transmut = $false 
+                            }
+                        } else {
+                            $game.Transmut = $false 
+                        }
+                    } else {
+                        $game.Transmut = $false 
+                    }
+                } else { 
+                    $game.Transmut = $false 
+                }
+          }
         $liste[$test] = $game
         $test = $test +1 
     }
