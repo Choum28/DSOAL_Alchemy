@@ -25,6 +25,7 @@
     AUTHOR:    Choum
 
     VERSION HISTORY:
+    1.22    04.08.2024    Test subdir path (if filled) before adding game to the detected list on startup.
     1.21    25.07.2024    Considerably improves launch loading time by improving CheckPresent function.
     1.2     24.07.2024    Add openalsoft configuration support.
     1.1     22.07.2024    Add 64bits support
@@ -228,10 +229,21 @@ function CheckPresent{
         }
     }
     if (![string]::IsNullOrEmpty($a.gamePath)) {
-        if (test-path $a.GamePath) {
-            $a.Found = $true
+        if ([System.IO.Directory]::Exists($a.GamePath)) {
+            if (![string]::IsNullOrEmpty($a.SubDir)){
+                if ([System.IO.Directory]::Exists("$($a.GamePath)\$($a.SubDir)")) {
+                    $a.Found = $true
+                } else { 
+                    $a.Found = $false 
+                }
+            } else {
+                $a.Found = $true 
+            }
+        } else {
+            $a.Found = $false
         }
-        else {$a.Found = $false}
+    } else {
+        $a.Found = $false
     }
     return $a
 }
@@ -384,7 +396,7 @@ $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.T
             <TextBlock Name="Text_jeuInstall" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,54,0,0" Width="238"/>
             <TextBlock Name="Text_JeuTransmut" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="472,54,0,0" Width="173"/>
             <TextBlock Name="T_URL" HorizontalAlignment="Left" TextWrapping="Wrap" Text="https://github.com/Choum28/DSOAL_Alchemy" VerticalAlignment="Top" Margin="20,361,0,0" FontSize="8"/>
-            <TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.21" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
+            <TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.22" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
         </Grid>
     </Viewbox>
 </Window>
@@ -406,11 +418,13 @@ $MenuGauche.Items.Clear()
 foreach ($jeu in $jeunontransmut) {
     $MenuGauche.Items.Add($jeu.name) | Out-Null
 }
+Sortlistview $MenuGauche
 
 $MenuDroite.Items.Clear()
 foreach ($jeu in $jeutransmut) {
     $MenuDroite.Items.Add($jeu.name) | Out-Null
 }
+Sortlistview $MenuDroite
  
 #Transmut Button Copy required file to gamepath, refresh listview (sort by name)
 $BoutonTransmut.add_Click({
