@@ -207,6 +207,13 @@
 
 [Deus EX]RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\Unreal Technology\Installed Apps\Deus Ex\FolderGamePath=SubDir=SystemRootDirInstallOption=Falsex64=False
 
+[Deus EX Revision]
+RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\Unreal Technology\Installed Apps\Deus Ex\Folder
+GamePath=
+SubDir=Revision\System
+RootDirInstallOption=False
+x64=False
+
 [Deus EX: Invisible War]RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\Ion Storm\Deus Ex - Invisible War\ION_ROOT_PCGamePath=SubDir=SystemRootDirInstallOption=Falsex64=False
 
 [Far Cry 2]RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\Ubisoft\Far Cry 2\InstallDirGamePath=SubDir=BinRootDirInstallOption=Falsex64=False
