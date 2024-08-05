@@ -31,13 +31,13 @@ A Correct installation should look like this
 DSOAL_Alchemy-main
     |
     |--dsoal_alchemy.ps1        the script itself
-    |--Games.template           Default gamelist use to generate the dsoal_alchemy.ini gamelist, not used if you have creative alchemy installed.
+    |--Games.template           Default gamelist use to generate the dsoal_alchemy.ini gamelist, if creative alchemy is not installed.
     |--dsoal_alchemy.ico        Icon file used by Gui.
     | 
     |-- en-US                   and/or any other language culture folder (fr-FR)
-    |    |--dsoal_alchemy.psd1  Containt all texts related to the script
+    |    |--dsoal_alchemy.psd1  Contains all texts related to the script
     | 
-    |-- configs                 Folder where you put specific openalsoft (ini file) configuration you want to use
+    |-- configs                 Folder where you put specific openalsoft (ini file) configurations you want to use/deploy
     |
     |-- x86-64
     |    |--soft_oal.dll        64 bits version of openal soft driver
