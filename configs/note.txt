@@ -1,1 +1,1 @@
-place your openalsoft configuratio file here, ini file only.
+place your openalsoft configuration files here, ini file only.
