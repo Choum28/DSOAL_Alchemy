@@ -666,6 +666,7 @@ $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.T
 $reader = (New-Object System.Xml.XmlNodeReader $inputXML)
 $Window = [Windows.Markup.XamlReader]::Load( $reader )
 $inputXML.SelectNodes("//*[@Name]") | Foreach-Object { Set-Variable -Name ($_.Name) -Value $Window.FindName($_.Name)}
+$Window.WindowStartupLocation = "CenterScreen"
 
 $BoutonEdition.Content = $txt.BoutonEditionContent
 $BoutonAjouter.Content = $txt.BoutonAjouterContent
@@ -758,6 +759,7 @@ $BoutonEdition.add_Click({
         $reader = (New-Object System.Xml.XmlNodeReader $inputXML)
         $Window_edit = [Windows.Markup.XamlReader]::Load( $reader )
         $inputXML.SelectNodes("//*[@Name]") | Foreach-Object { Set-Variable -Name ($_.Name) -Value $Window_edit.FindName($_.Name)}
+        $Window_edit.WindowStartupLocation = "CenterScreen"
 
         $T_Titrejeu.IsReadOnly = $true
         $T_Titrejeu.Background = '#e5e5e5'
@@ -1139,6 +1141,7 @@ $BoutonAjouter.add_Click({
     $reader = (New-Object System.Xml.XmlNodeReader $inputXML)
     $Window_add = [Windows.Markup.XamlReader]::Load( $reader )
     $inputXML.SelectNodes("//*[@Name]") | Foreach-Object { Set-Variable -Name ($_.Name) -Value $Window_add.FindName($_.Name)}
+    $Window_add.WindowStartupLocation = "CenterScreen"
     
     # WPF Content, tooltip values
     $Window_add.Title = $txt.MainTitle2    
