@@ -40,23 +40,23 @@
 
 # Check if all required dlls are present and if Creative Alchemy is installed (optionnal)
 function LocateAlchemy { 
-    if (-Not (Test-Path -path "$PSScriptRoot\Games.template")) {
+    if (-Not ([System.IO.File]::Exists("$PSScriptRoot\Games.template"))) {
         [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\Games.template","",0,	16)
         exit
     }
-    if (-Not (Test-Path -path "$PSScriptRoot\x86-64\soft_oal.dll")) {
+    if (-Not ([System.IO.File]::Exists("$PSScriptRoot\x86-64\soft_oal.dll"))) {
         [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\86-64\soft_oal.dll","",0,	16)
         exit
     }
-    if (-Not (Test-Path -path "$PSScriptRoot\x86-64\dsound.dll")) {
+    if (-Not ([System.IO.File]::Exists("$PSScriptRoot\x86-64\dsound.dll"))) {
         [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\86-64\dsound.dll","",0,	16)
         exit
     }
-    if (-Not (Test-Path -path "$PSScriptRoot\x86\soft_oal.dll")) {
+    if (-Not ([System.IO.File]::Exists("$PSScriptRoot\x86\soft_oal.dll"))) {
         [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\x86\soft_oal.dll","",0,	16)
         exit
     }
-    if (-Not (Test-Path -path "$PSScriptRoot\x86\dsound.dll")) {
+    if (-Not ([System.IO.File]::Exists("$PSScriptRoot\x86\dsound.dll"))) {
         [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\x86\dsound.dll","",0,	16)
         exit
     }
@@ -74,7 +74,7 @@ function LocateAlchemy {
             [System.Windows.MessageBox]::Show($txt.Badlocation,"",0,16)
             exit
         }
-        if (Test-Path -path "$d\alchemy.ini") {
+        if ([System.IO.File]::Exists("$d\alchemy.ini")) {
                 return $d
             } else {
                 [System.Windows.MessageBox]::Show("$($txt.missfile) $d\alchemy.ini","",0,	16)
@@ -358,7 +358,7 @@ function Transmut {
                 if ($x64-eq "true") {
                     if ([string]::IsNullOrEmpty($Subdir)) {
                         # 64bits Gamepath only
-                        if (test-path ("$gamepath\dsound.dll")){
+                        if ([System.IO.File]::Exists("$gamepath\dsound.dll")){
                             $destHash = (Get-FileHash -Path "$gamepath\dsound.dll" -Algorithm SHA256).Hash
                             if ($script:dsoundHashx64 -ne $destHash) {
                                 Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
@@ -366,7 +366,7 @@ function Transmut {
                         } else {
                             Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
                         }
-                        if (test-path ("$gamepath\dsoal-aldrv.dll")){
+                        if ([System.IO.File]::Exists("$gamepath\dsoal-aldrv.dll")){
                             $destHash = (Get-FileHash -Path "$gamepath\dsoal-aldrv.dll" -Algorithm SHA256).Hash
                             if ($script:OalHashx64 -ne $destHash) {
                                 Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
@@ -378,13 +378,13 @@ function Transmut {
                             Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
                         }
                         else {
-                            if(test-path ("$gamepath\alsoft.ini")){
+                            if ([System.IO.File]::Exists("$gamepath\alsoft.ini")){
                                 Remove-Item "$gamepath\alsoft.ini"
                             }
                         }
                     # 64 bits subdir + root install
                     } elseif ($RootDirInstallOption -eq "True") {
-                        if (test-path ("$gamepath\dsound.dll")){
+                        if ([System.IO.File]::Exists("$gamepath\dsound.dll")){
                             $destHash = (Get-FileHash -Path "$gamepath\dsound.dll" -Algorithm SHA256).Hash
                             if ($script:dsoundHashx64 -ne $destHash) {
                                 Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
@@ -392,7 +392,7 @@ function Transmut {
                         } else {
                             Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
                         }
-                        if (test-path ("$gamepath\$Subdir\dsound.dll")){
+                        if ([System.IO.File]::Exists("$gamepath\$Subdir\dsound.dll")){
                             $destHash = (Get-FileHash -Path "$gamepath\$Subdir\dsound.dll" -Algorithm SHA256).Hash
                             if ($script:dsoundHashx64 -ne $destHash) {
                                 Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath\$Subdir
@@ -400,7 +400,7 @@ function Transmut {
                         } else {
                             Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath\$Subdir
                         }
-                        if (test-path ("$gamepath\dsoal-aldrv.dll")){
+                        if ([System.IO.File]::Exists("$gamepath\dsoal-aldrv.dll")){
                             $destHash = (Get-FileHash -Path "$gamepath\dsoal-aldrv.dll" -Algorithm SHA256).Hash
                             if ($script:OalHashx64 -ne $destHash) {
                                 Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
@@ -408,7 +408,7 @@ function Transmut {
                         } else {
                             Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
                         }
-                        if (test-path ("$gamepath\$Subdir\dsoal-aldrv.dll")){
+                        if ([System.IO.File]::Exists("$gamepath\$Subdir\dsoal-aldrv.dll")){
                             $destHash = (Get-FileHash -Path "$gamepath\$Subdir\dsoal-aldrv.dll" -Algorithm SHA256).Hash
                             if ($script:OalHashx64 -ne $destHash) {
                                 Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
@@ -420,16 +420,16 @@ function Transmut {
                             Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
                             Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
                         } else {
-                            if (test-path ("$gamepath\alsoft.ini")){
+                            if ([System.IO.File]::Exists("$gamepath\alsoft.ini")){
                                 Remove-Item "$gamepath\alsoft.ini"
                             }
-                            if (test-path ("$gamepath\$Subdir\alsoft.ini")){
+                            if ([System.IO.File]::Exists("$gamepath\$Subdir\alsoft.ini")){
                                 Remove-Item "$gamepath\$Subdir\alsoft.ini"
                             }
                         }
                     # 64 bits subdir only
                     } else {
-                        if (test-path ("$gamepath\$Subdir\dsound.dll")){
+                        if ([System.IO.File]::Exists("$gamepath\$Subdir\dsound.dll")){
                             $destHash = (Get-FileHash -Path "$gamepath\$Subdir\dsound.dll" -Algorithm SHA256).Hash
                             if ($script:dsoundHashx64 -ne $destHash) {
                                 Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath\$Subdir
@@ -437,7 +437,7 @@ function Transmut {
                         } else {
                             Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath\$Subdir
                         }
-                        if (test-path ("$gamepath\$Subdir\dsoal-aldrv.dll")){
+                        if ([System.IO.File]::Exists("$gamepath\$Subdir\dsoal-aldrv.dll")){
                             $destHash = (Get-FileHash -Path "$gamepath\$Subdir\dsoal-aldrv.dll" -Algorithm SHA256).Hash
                             if ($script:OalHashx64 -ne $destHash) {
                                 Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
@@ -448,7 +448,7 @@ function Transmut {
                         if ($conf) {
                             Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
                         } else {
-                            if (test-path ("$gamepath\$Subdir\alsoft.ini")){
+                            if ([System.IO.File]::Exists("$gamepath\$Subdir\alsoft.ini")){
                                 Remove-Item "$gamepath\$Subdir\alsoft.ini"
                             }
                         }
@@ -457,7 +457,7 @@ function Transmut {
                 # 32 bits
                 else {
                             if ([string]::IsNullOrEmpty($Subdir)) {
-                                if (test-path ("$gamepath\dsound.dll")){
+                                if ([System.IO.File]::Exists("$gamepath\dsound.dll")){
                                     $destHash = (Get-FileHash -Path "$gamepath\dsound.dll" -Algorithm SHA256).Hash
                                     if ($script:dsoundHash -ne $destHash) {
                                         Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
@@ -465,7 +465,7 @@ function Transmut {
                                 } else {
                                     Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
                                 }
-                                if (test-path ("$gamepath\dsoal-aldrv.dll")){
+                                if ([System.IO.File]::Exists("$gamepath\dsoal-aldrv.dll")){
                                     $destHash = (Get-FileHash -Path "$gamepath\dsoal-aldrv.dll" -Algorithm SHA256).Hash
                                     if ($script:OalHash -ne $destHash) {
                                         Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
@@ -476,12 +476,12 @@ function Transmut {
                                 if ($conf) {
                                     Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
                                 } else {
-                                    if(test-path ("$gamepath\alsoft.ini")){
+                                    if([System.IO.File]::Exists("$gamepath\alsoft.ini")){
                                         Remove-Item "$gamepath\alsoft.ini"
                                     }
                                 }
                             } elseif ($RootDirInstallOption -eq "True") {
-                                if (test-path ("$gamepath\dsound.dll")){
+                                if ([System.IO.File]::Exists("$gamepath\dsound.dll")){
                                     $destHash = (Get-FileHash -Path "$gamepath\dsound.dll" -Algorithm SHA256).Hash
                                     if ($script:dsoundHash -ne $destHash) {
                                         Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
@@ -489,7 +489,7 @@ function Transmut {
                                 } else {
                                     Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
                                 }
-                                if (test-path ("$gamepath\$Subdir\dsound.dll")){
+                                if ([System.IO.File]::Exists("$gamepath\$Subdir\dsound.dll")){
                                     $destHash = (Get-FileHash -Path "$gamepath\$Subdir\dsound.dll" -Algorithm SHA256).Hash
                                     if ($script:dsoundHash -ne $destHash) {
                                         Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath\$Subdir
@@ -497,7 +497,7 @@ function Transmut {
                                 } else {
                                     Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath\$Subdir
                                 }
-                                if (test-path ("$gamepath\dsoal-aldrv.dll")){
+                                if ([System.IO.File]::Exists("$gamepath\dsoal-aldrv.dll")){
                                     $destHash = (Get-FileHash -Path "$gamepath\dsoal-aldrv.dll" -Algorithm SHA256).Hash
                                     if ($script:OalHash -ne $destHash) {
                                         Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
@@ -505,7 +505,7 @@ function Transmut {
                                 } else {
                                     Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
                                 }
-                                if (test-path ("$gamepath\$Subdir\dsoal-aldrv.dll")){
+                                if ([System.IO.File]::Exists("$gamepath\$Subdir\dsoal-aldrv.dll")){
                                     $destHash = (Get-FileHash -Path "$gamepath\$Subdir\dsoal-aldrv.dll" -Algorithm SHA256).Hash
                                     if ($script:OalHash -ne $destHash) {
                                         Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
@@ -517,25 +517,25 @@ function Transmut {
                                     Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
                                     Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
                                 } else {
-                                    if (test-path ("$gamepath\alsoft.ini")){
+                                    if ([System.IO.File]::Exists("$gamepath\alsoft.ini")){
                                         Remove-Item "$gamepath\alsoft.ini"
                                     }
-                                    if (test-path ("$gamepath\$Subdir\alsoft.ini")){
+                                    if ([System.IO.File]::Exists("$gamepath\$Subdir\alsoft.ini")){
                                         Remove-Item "$gamepath\$Subdir\alsoft.ini"
                                     }
                                 }
                             } else {
                                 # 32bits Subdir Only
-                                if (test-path ("$gamepath\dsoal-aldrv.dll")) {
+                                if ([System.IO.File]::Exists("$gamepath\dsoal-aldrv.dll")) {
                                     Remove-Item -Path "$gamepath\dsoal-aldrv.dll" -force
                                 }
-                                if (test-path ("$gamepath\dsound.dll")) {
+                                if ([System.IO.File]::Exists("$gamepath\dsound.dll")) {
                                     Remove-Item -Path "$gamepath\dsound.dll" -force
                                 }
-                                if (test-path ("$gamepath\alsoft.ini")) {
+                                if ([System.IO.File]::Exists("$gamepath\alsoft.ini")) {
                                     Remove-Item -Path "$gamepath\alsoft.ini" -force
                                 }
-                                if (test-path ("$gamepath\$Subdir\dsound.dll")){
+                                if ([System.IO.File]::Exists("$gamepath\$Subdir\dsound.dll")){
                                     $destHash = (Get-FileHash -Path "$gamepath\$Subdir\dsound.dll" -Algorithm SHA256).Hash
                                     if ($script:dsoundHash -ne $destHash) {
                                         Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath\$Subdir
@@ -543,7 +543,7 @@ function Transmut {
                                 } else {
                                     Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath\$Subdir
                                 }
-                                if (test-path ("$gamepath\$Subdir\dsoal-aldrv.dll")){
+                                if ([System.IO.File]::Exists("$gamepath\$Subdir\dsoal-aldrv.dll")){
                                     $destHash = (Get-FileHash -Path "$gamepath\$Subdir\dsoal-aldrv.dll" -Algorithm SHA256).Hash
                                     if ($script:OalHash -ne $destHash) {
                                         Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
@@ -554,7 +554,7 @@ function Transmut {
                                     if ($conf) {
                                         Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
                                     } else {
-                                        if (test-path ("$gamepath\$Subdir\alsoft.ini")) {
+                                        if ([System.IO.File]::Exists("$gamepath\$Subdir\alsoft.ini")) {
                                             Remove-Item -Path "$gamepath\$Subdir\alsoft.ini" -force
                                         }
                                     }
@@ -577,19 +577,19 @@ function UnTransmut {
             $RootDirInstallOption = $game.RootDirInstallOption
             if ([string]::IsNullOrEmpty($Subdir)) {
                 Remove-Item "$gamepath\dsoal-aldrv.dll"
-                if (test-path "$gamepath\dsound.dll") { Remove-Item "$gamepath\dsound.dll" }
-                if (test-path "$gamepath\alsoft.ini") { Remove-Item "$gamepath\alsoft.ini" }				
+                if ([System.IO.File]::Exists("$gamepath\dsound.dll")) { Remove-Item "$gamepath\dsound.dll" }
+                if ([System.IO.File]::Exists("$gamepath\alsoft.ini")) { Remove-Item "$gamepath\alsoft.ini" }				
             } elseif ($RootDirInstallOption -eq "True") {
                 Remove-Item "$gamepath\dsoal-aldrv.dll"	
-                if (test-path "$gamepath\dsound.dll") { Remove-Item "$gamepath\dsound.dll" }
-                if (test-path "$gamepath\alsoft.ini") { Remove-Item "$gamepath\alsoft.ini" }	
+                if ([System.IO.File]::Exists("$gamepath\dsound.dll")) { Remove-Item "$gamepath\dsound.dll" }
+                if ([System.IO.File]::Exists("$gamepath\alsoft.ini")) { Remove-Item "$gamepath\alsoft.ini" }	
                 Remove-Item "$gamepath\$Subdir\dsoal-aldrv.dll"
-                if (test-path "$gamepath\$Subdir\dsound.dll") { Remove-Item "$gamepath\$Subdir\dsound.dll" }
-                if (test-path "$gamepath\$Subdir\alsoft.ini") { Remove-Item "$gamepath\$Subdir\alsoft.ini" }	
+                if ([System.IO.File]::Exists("$gamepath\$Subdir\dsound.dll")) { Remove-Item "$gamepath\$Subdir\dsound.dll" }
+                if ([System.IO.File]::Exists("$gamepath\$Subdir\alsoft.ini")) { Remove-Item "$gamepath\$Subdir\alsoft.ini" }	
             } else {
                 Remove-Item "$gamepath\$Subdir\dsoal-aldrv.dll"
-                if (test-path "$gamepath\$Subdir\dsound.dll") { Remove-Item "$gamepath\$Subdir\dsound.dll" }
-                if (test-path "$gamepath\$Subdir\alsoft.ini") { Remove-Item "$gamepath\$Subdir\alsoft.ini" }
+                if ([System.IO.File]::Exists("$gamepath\$Subdir\dsound.dll")) { Remove-Item "$gamepath\$Subdir\dsound.dll" }
+                if ([System.IO.File]::Exists("$gamepath\$Subdir\alsoft.ini")) { Remove-Item "$gamepath\$Subdir\alsoft.ini" }
             }
             $MenuDroite.Items.Remove($x)
             $MenuGauche.Items.Add($x)
