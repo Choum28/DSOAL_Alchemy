@@ -668,6 +668,8 @@ $Window = [Windows.Markup.XamlReader]::Load( $reader )
 $inputXML.SelectNodes("//*[@Name]") | Foreach-Object { Set-Variable -Name ($_.Name) -Value $Window.FindName($_.Name)}
 $Window.WindowStartupLocation = "CenterScreen"
 
+$BoutonTransmut.IsEnabled=$False
+$BoutonUnTransmut.IsEnabled=$False
 $BoutonEdition.Content = $txt.BoutonEditionContent
 $BoutonAjouter.Content = $txt.BoutonAjouterContent
 $BoutonParDefaut.Content = $txt.BoutonDefaultContent
@@ -702,12 +704,14 @@ $BoutonUnTransmut.add_Click({
 $MenuGauche.Add_MouseDoubleClick({
     if ($MenuGauche.SelectedItem -ne $null) {
         Transmut $MenuGauche.SelectedItem
+        $BoutonTransmut.IsEnabled=$False
     }
 })
 
 $MenuDroite.Add_MouseDoubleClick({
     if ($MenuDroite.SelectedItem -ne $null) {
         UnTransmut $MenuDroite.SelectedItem
+        $BoutonUnTransmut.IsEnabled=$False
     }
 })
 
@@ -717,6 +721,8 @@ $MenuDroite.Add_SelectionChanged({
     }
     $BoutonEdition.IsEnabled=$True
     $script:lastSelectedListView = $MenuDroite
+    $BoutonTransmut.IsEnabled=$False
+    $BoutonUnTransmut.IsEnabled=$True
 })
 
 $MenuGauche.Add_SelectionChanged({
@@ -725,6 +731,8 @@ $MenuGauche.Add_SelectionChanged({
     }
     $BoutonEdition.IsEnabled=$True
     $script:lastSelectedListView = $MenuGauche
+    $BoutonTransmut.IsEnabled=$True
+    $BoutonUnTransmut.IsEnabled=$False
 })
 
 ### EDIT BUTTON, Check each mandatory info, add them to global var, and update Dsoal_alchemy file entry.
