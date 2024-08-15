@@ -357,52 +357,209 @@ function Transmut {
                 $Conf = $game.conf
                 if ($x64-eq "true") {
                     if ([string]::IsNullOrEmpty($Subdir)) {
-                        Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
-                        Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
+                        # 64bits Gamepath only
+                        if (test-path ("$gamepath\dsound.dll")){
+                            $destHash = (Get-FileHash -Path "$gamepath\dsound.dll" -Algorithm SHA256).Hash
+                            if ($script:dsoundHashx64 -ne $destHash) {
+                                Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
+                            }
+                        } else {
+                            Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
+                        }
+                        if (test-path ("$gamepath\dsoal-aldrv.dll")){
+                            $destHash = (Get-FileHash -Path "$gamepath\dsoal-aldrv.dll" -Algorithm SHA256).Hash
+                            if ($script:OalHashx64 -ne $destHash) {
+                                Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
+                            }
+                        } else {
+                            Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
+                        }
                         if ($conf) {
                             Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
                         }
+                        else {
+                            if(test-path ("$gamepath\alsoft.ini")){
+                                Remove-Item "$gamepath\alsoft.ini"
+                            }
+                        }
+                    # 64 bits subdir + root install
                     } elseif ($RootDirInstallOption -eq "True") {
-                        Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
-                        Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath\$Subdir
-                        Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
-                        Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
+                        if (test-path ("$gamepath\dsound.dll")){
+                            $destHash = (Get-FileHash -Path "$gamepath\dsound.dll" -Algorithm SHA256).Hash
+                            if ($script:dsoundHashx64 -ne $destHash) {
+                                Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
+                            }
+                        } else {
+                            Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
+                        }
+                        if (test-path ("$gamepath\$Subdir\dsound.dll")){
+                            $destHash = (Get-FileHash -Path "$gamepath\$Subdir\dsound.dll" -Algorithm SHA256).Hash
+                            if ($script:dsoundHashx64 -ne $destHash) {
+                                Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath\$Subdir
+                            }
+                        } else {
+                            Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath\$Subdir
+                        }
+                        if (test-path ("$gamepath\dsoal-aldrv.dll")){
+                            $destHash = (Get-FileHash -Path "$gamepath\dsoal-aldrv.dll" -Algorithm SHA256).Hash
+                            if ($script:OalHashx64 -ne $destHash) {
+                                Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
+                            }
+                        } else {
+                            Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
+                        }
+                        if (test-path ("$gamepath\$Subdir\dsoal-aldrv.dll")){
+                            $destHash = (Get-FileHash -Path "$gamepath\$Subdir\dsoal-aldrv.dll" -Algorithm SHA256).Hash
+                            if ($script:OalHashx64 -ne $destHash) {
+                                Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
+                            }
+                        } else {
+                            Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
+                        }
                         if ($conf) {
                             Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
                             Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
+                        } else {
+                            if (test-path ("$gamepath\alsoft.ini")){
+                                Remove-Item "$gamepath\alsoft.ini"
+                            }
+                            if (test-path ("$gamepath\$Subdir\alsoft.ini")){
+                                Remove-Item "$gamepath\$Subdir\alsoft.ini"
+                            }
                         }
-                    } else { 
-                        Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath\$Subdir
-                        Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
+                    # 64 bits subdir only
+                    } else {
+                        if (test-path ("$gamepath\$Subdir\dsound.dll")){
+                            $destHash = (Get-FileHash -Path "$gamepath\$Subdir\dsound.dll" -Algorithm SHA256).Hash
+                            if ($script:dsoundHashx64 -ne $destHash) {
+                                Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath\$Subdir
+                            }
+                        } else {
+                            Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath\$Subdir
+                        }
+                        if (test-path ("$gamepath\$Subdir\dsoal-aldrv.dll")){
+                            $destHash = (Get-FileHash -Path "$gamepath\$Subdir\dsoal-aldrv.dll" -Algorithm SHA256).Hash
+                            if ($script:OalHashx64 -ne $destHash) {
+                                Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
+                            }
+                        } else {
+                            Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
+                        }
                         if ($conf) {
                             Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
+                        } else {
+                            if (test-path ("$gamepath\$Subdir\alsoft.ini")){
+                                Remove-Item "$gamepath\$Subdir\alsoft.ini"
+                            }
                         }
                     }
-                } else {
+                } 
+                # 32 bits
+                else {
                             if ([string]::IsNullOrEmpty($Subdir)) {
-                                Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
-                                Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
-                                if ($conf) {Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini}
+                                if (test-path ("$gamepath\dsound.dll")){
+                                    $destHash = (Get-FileHash -Path "$gamepath\dsound.dll" -Algorithm SHA256).Hash
+                                    if ($script:dsoundHash -ne $destHash) {
+                                        Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
+                                    }
+                                } else {
+                                    Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
+                                }
+                                if (test-path ("$gamepath\dsoal-aldrv.dll")){
+                                    $destHash = (Get-FileHash -Path "$gamepath\dsoal-aldrv.dll" -Algorithm SHA256).Hash
+                                    if ($script:OalHash -ne $destHash) {
+                                        Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
+                                    }
+                                } else {
+                                    Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
+                                }
+                                if ($conf) {
+                                    Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
+                                } else {
+                                    if(test-path ("$gamepath\alsoft.ini")){
+                                        Remove-Item "$gamepath\alsoft.ini"
+                                    }
+                                }
                             } elseif ($RootDirInstallOption -eq "True") {
-                                Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
-                                Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath\$Subdir
-                                Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
-                                Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
+                                if (test-path ("$gamepath\dsound.dll")){
+                                    $destHash = (Get-FileHash -Path "$gamepath\dsound.dll" -Algorithm SHA256).Hash
+                                    if ($script:dsoundHash -ne $destHash) {
+                                        Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
+                                    }
+                                } else {
+                                    Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
+                                }
+                                if (test-path ("$gamepath\$Subdir\dsound.dll")){
+                                    $destHash = (Get-FileHash -Path "$gamepath\$Subdir\dsound.dll" -Algorithm SHA256).Hash
+                                    if ($script:dsoundHash -ne $destHash) {
+                                        Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath\$Subdir
+                                    }
+                                } else {
+                                    Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath\$Subdir
+                                }
+                                if (test-path ("$gamepath\dsoal-aldrv.dll")){
+                                    $destHash = (Get-FileHash -Path "$gamepath\dsoal-aldrv.dll" -Algorithm SHA256).Hash
+                                    if ($script:OalHash -ne $destHash) {
+                                        Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
+                                    }
+                                } else {
+                                    Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
+                                }
+                                if (test-path ("$gamepath\$Subdir\dsoal-aldrv.dll")){
+                                    $destHash = (Get-FileHash -Path "$gamepath\$Subdir\dsoal-aldrv.dll" -Algorithm SHA256).Hash
+                                    if ($script:OalHash -ne $destHash) {
+                                        Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
+                                    }
+                                } else {
+                                    Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
+                                }
                                 if ($conf) {
                                     Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
                                     Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
+                                } else {
+                                    if (test-path ("$gamepath\alsoft.ini")){
+                                        Remove-Item "$gamepath\alsoft.ini"
+                                    }
+                                    if (test-path ("$gamepath\$Subdir\alsoft.ini")){
+                                        Remove-Item "$gamepath\$Subdir\alsoft.ini"
+                                    }
                                 }
                             } else {
-                                Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath\$Subdir
-                                Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
-                                if ($conf) {
-                                    Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
+                                # 32bits Subdir Only
+                                if (test-path ("$gamepath\dsoal-aldrv.dll")) {
+                                    Remove-Item -Path "$gamepath\dsoal-aldrv.dll" -force
                                 }
+                                if (test-path ("$gamepath\dsound.dll")) {
+                                    Remove-Item -Path "$gamepath\dsound.dll" -force
+                                }
+                                if (test-path ("$gamepath\alsoft.ini")) {
+                                    Remove-Item -Path "$gamepath\alsoft.ini" -force
+                                }
+                                if (test-path ("$gamepath\$Subdir\dsound.dll")){
+                                    $destHash = (Get-FileHash -Path "$gamepath\$Subdir\dsound.dll" -Algorithm SHA256).Hash
+                                    if ($script:dsoundHash -ne $destHash) {
+                                        Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath\$Subdir
+                                    }
+                                } else {
+                                    Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath\$Subdir
+                                }
+                                if (test-path ("$gamepath\$Subdir\dsoal-aldrv.dll")){
+                                    $destHash = (Get-FileHash -Path "$gamepath\$Subdir\dsoal-aldrv.dll" -Algorithm SHA256).Hash
+                                    if ($script:OalHash -ne $destHash) {
+                                        Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
+                                    }
+                                } else {
+                                    Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\$Subdir\dsoal-aldrv.dll
+                                }
+                                    if ($conf) {
+                                        Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\$Subdir\alsoft.ini
+                                    } else {
+                                        if (test-path ("$gamepath\$Subdir\alsoft.ini")) {
+                                            Remove-Item -Path "$gamepath\$Subdir\alsoft.ini" -force
+                                        }
+                                    }
                             }
                     }
-                if ($conf) {
-                    Copy-Item -Path "$PSScriptRoot\Configs\$conf" -Destination $gamepath\alsoft.ini
-                }
                 $MenuGauche.Items.Remove($x)
                 $MenuDroite.Items.Add($x)
                 Sortlistview $MenuDroite
@@ -458,6 +615,11 @@ if (!(Test-Path -path "$PSScriptRoot\Dsoal_alchemy.ini")) {
         }
 }
 
+$script:OalHash = (Get-FileHash -Path "$PSScriptRoot\x86\soft_oal.dll" -Algorithm SHA256).Hash 
+$script:OalHashx64 = (Get-FileHash -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Algorithm SHA256).Hash
+$script:dsoundHash = (Get-FileHash -Path "$PSScriptRoot\x86\dsound.dll" -Algorithm SHA256).Hash 
+$script:dsoundHashx64 = (Get-FileHash -Path "$PSScriptRoot\x86-64\dsound.dll" -Algorithm SHA256).Hash 
+
 $script:listejeux = Read-File "$PSScriptRoot\Dsoal_alchemy.ini"
 CheckInstall $script:listejeux | Out-Null
 $script:jeutrouve = $script:listejeux | where-object Found -eq $true
@@ -511,19 +673,20 @@ $BoutonParDefaut.Content = $txt.BoutonDefaultContent
 $Text_main.Text = $txt.Text_main
 $Text_jeuInstall.Text = $txt.Text_jeuInstall
 $Text_JeuTransmut.Text = $txt.Text_JeuTransmut
+$BoutonEdition.IsEnabled=$False
 
 # populate each listview, disable counter output in terminal
 $MenuGauche.Items.Clear()
 foreach ($jeu in $jeunontransmut) {
     $MenuGauche.Items.Add($jeu.name) | Out-Null
 }
-Sortlistview $MenuGauche
+Sortlistview $MenuGauche | Out-Null
 
 $MenuDroite.Items.Clear()
 foreach ($jeu in $jeutransmut) {
     $MenuDroite.Items.Add($jeu.name) | Out-Null
 }
-Sortlistview $MenuDroite
+Sortlistview $MenuDroite | Out-Null
  
 #Transmut Button Copy required file to gamepath, refresh listview (sort by name)
 $BoutonTransmut.add_Click({
@@ -548,10 +711,18 @@ $MenuDroite.Add_MouseDoubleClick({
 })
 
 $MenuDroite.Add_SelectionChanged({
+    if ($MenuDroite.SelectedIndex -ne -1) {
+         $MenuGauche.SelectedIndex = -1
+    }
+    $BoutonEdition.IsEnabled=$True
     $script:lastSelectedListView = $MenuDroite
 })
 
 $MenuGauche.Add_SelectionChanged({
+    if ($MenuGauche.SelectedIndex -ne -1) {
+        $MenuDroite.SelectedIndex = -1
+    }
+    $BoutonEdition.IsEnabled=$True
     $script:lastSelectedListView = $MenuGauche
 })
 
@@ -796,6 +967,9 @@ $BoutonEdition.add_Click({
         })
         # Cancel Button (EDIT FORM)
         $B_Cancel.add_Click({
+            $MenuGauche.SelectedIndex = -1
+            $MenuDroite.SelectedIndex = -1
+            $BoutonEdition.IsEnabled=$False
             $Window_edit.Close()
         })
 
@@ -923,8 +1097,14 @@ $BoutonEdition.add_Click({
                     Transmut $x
                     }
                 $Window_edit.Close()
-                }
+            }
         })
+        $closingHandler = {
+            $MenuGauche.SelectedIndex = -1
+            $MenuDroite.SelectedIndex = -1
+            $BoutonEdition.IsEnabled=$False
+        }
+        $Window_edit.Add_Closing($closingHandler)
         $Window_edit.ShowDialog() | out-null
     }
 })
@@ -1130,6 +1310,9 @@ $BoutonAjouter.add_Click({
         }
     })
     $B_Cancel.add_Click({
+        $MenuGauche.SelectedIndex = -1
+        $MenuDroite.SelectedIndex = -1
+        $BoutonEdition.IsEnabled=$False
         $Window_add.Close()
     })
    
@@ -1263,6 +1446,12 @@ $BoutonAjouter.add_Click({
             $Window_add.Close()
         }
     })
+    $closingHandler = {
+        $MenuGauche.SelectedIndex = -1
+        $MenuDroite.SelectedIndex = -1
+        $BoutonEdition.IsEnabled=$False
+    }
+    $Window_add.Add_Closing($closingHandler)
     $Window_add.ShowDialog() | out-null
 })
 
