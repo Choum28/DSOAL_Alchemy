@@ -25,6 +25,7 @@
     AUTHOR:    Choum
 
     VERSION HISTORY:
+    1.3     15.08.2024    Add doubleclick support to transmut/Untransmut, possibility to edit from both Listview.
     1.22    04.08.2024    Test subdir path (if filled) before adding game to the detected list on startup.
     1.21    25.07.2024    Considerably improves launch loading time by improving CheckPresent function.
     1.2     24.07.2024    Add openalsoft configuration support.
@@ -249,7 +250,7 @@ function CheckPresent{
 }
 
 # Check if the game list is installed with check present function.
-function CheckInstall{ 
+function CheckInstall {
     param (
         $liste
     )
@@ -263,7 +264,7 @@ function CheckInstall{
 }
 
 # Check if game is transmuted (dsoal-aldrv.dll + dsound present)
-function checkTransmut{ 
+function checkTransmut {
     param(
         $liste
     )
@@ -318,7 +319,7 @@ function checkTransmut{
     return $liste
 }
 
-function Sortlistview{
+function Sortlistview {
     param (
         $listview
     )
@@ -343,92 +344,10 @@ function Update-Conf {
     $C_ListConf.SelectedIndex = $C_ListConf.Items.Count - 1
 }
 
-Add-Type -AssemblyName PresentationFramework
-Add-Type -AssemblyName System.Windows.Forms
-
-#load translation if exist, if not will use en-US.
-Import-LocalizedData -BindingVariable txt
-
-# check if Dsoal_alchemy.ini already exist, if not check for Creative alchemy file or use template to generate new dsoal_alchemy.
-$PathALchemy = LocateAlchemy
-if (!(Test-Path -path "$PSScriptRoot\Dsoal_alchemy.ini")) {
-    if ($PathALchemy -ne "False") {
-        GenerateNewAlchemy "$PathALchemy\Alchemy.ini"
-    } else {
-            Copy-item $PSScriptRoot\Games.template $PSScriptRoot\Dsoal_alchemy.ini
-        }
-}
-
-$script:listejeux = Read-File "$PSScriptRoot\Dsoal_alchemy.ini"
-CheckInstall $script:listejeux | Out-Null
-$script:jeutrouve = $script:listejeux | where-object Found -eq $true
-#$jeutrouve | Out-GridView		#debug
-CheckTransmut $script:jeutrouve | Out-Null
-$jeutransmut = $script:jeutrouve | where-object Transmut -eq $true
-$jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.Transmut -eq $False}
-
-# Main windows
-[xml]$inputXML = @"
-<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        Title="Dsoal Alchemy" Height="417" Width="818" MinHeight="417" MinWidth="818" ResizeMode="CanResizeWithGrip" Icon="$PSScriptRoot\dsoal_alchemy.ico">
-    <Viewbox Stretch="Uniform" StretchDirection="UpOnly">
-        <Grid>
-            <ListView Name="MenuGauche" HorizontalAlignment="Left" Height="280" Margin="20,75,0,0" VerticalAlignment="Top" Width="310">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Width="300"/>
-                    </GridView>
-                </ListView.View>
-            </ListView>
-            <ListView Name="MenuDroite" HorizontalAlignment="Left" Height="280" Margin="472,75,20,0" VerticalAlignment="Top" Width="310">
-            <ListView.View>
-                    <GridView>
-                        <GridViewColumn Width="300"/>
-                    </GridView>
-                </ListView.View>
-            </ListView>
-            <Button Name="BoutonTransmut" Content="&gt;&gt;" HorizontalAlignment="Left" Height="45" Margin="350,100,0,0" VerticalAlignment="Top" Width="100"/>
-            <Button Name="BoutonUnTransmut" Content="&lt;&lt;" HorizontalAlignment="Left" Height="45  " Margin="350,163,0,0" VerticalAlignment="Top" Width="100"/>
-            <Button Name="BoutonEdition" HorizontalAlignment="Left" Height="25" Margin="350,256,0,0" VerticalAlignment="Top" Width="100"/>
-            <Button Name="BoutonAjouter" HorizontalAlignment="Left" Height="25" Margin="350,293,0,0" VerticalAlignment="Top" Width="100"/>
-            <Button Name="BoutonParDefaut" HorizontalAlignment="Left" Height="25" Margin="350,330,0,0" VerticalAlignment="Top" Width="100"/>
-            <TextBlock Name="Text_main" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,10,0,0" Width="762" Height="34"/>
-            <TextBlock Name="Text_jeuInstall" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,54,0,0" Width="238"/>
-            <TextBlock Name="Text_JeuTransmut" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="472,54,0,0" Width="173"/>
-            <TextBlock Name="T_URL" HorizontalAlignment="Left" TextWrapping="Wrap" Text="https://github.com/Choum28/DSOAL_Alchemy" VerticalAlignment="Top" Margin="20,361,0,0" FontSize="8"/>
-            <TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.22" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
-        </Grid>
-    </Viewbox>
-</Window>
-
-"@
-$reader = (New-Object System.Xml.XmlNodeReader $inputXML)
-$Window = [Windows.Markup.XamlReader]::Load( $reader )
-$inputXML.SelectNodes("//*[@Name]") | Foreach-Object { Set-Variable -Name ($_.Name) -Value $Window.FindName($_.Name)}
-
-$BoutonEdition.Content = "<< $($txt.BoutonEditionContent)"
-$BoutonAjouter.Content = $txt.BoutonAjouterContent
-$BoutonParDefaut.Content = $txt.BoutonDefaultContent
-$Text_main.Text = $txt.Text_main
-$Text_jeuInstall.Text = $txt.Text_jeuInstall
-$Text_JeuTransmut.Text = $txt.Text_JeuTransmut
-
-# populate each listview, disable counter output in terminal
-$MenuGauche.Items.Clear()
-foreach ($jeu in $jeunontransmut) {
-    $MenuGauche.Items.Add($jeu.name) | Out-Null
-}
-Sortlistview $MenuGauche
-
-$MenuDroite.Items.Clear()
-foreach ($jeu in $jeutransmut) {
-    $MenuDroite.Items.Add($jeu.name) | Out-Null
-}
-Sortlistview $MenuDroite
- 
-#Transmut Button Copy required file to gamepath, refresh listview (sort by name)
-$BoutonTransmut.add_Click({
-    $x = $Menugauche.SelectedItem
+function Transmut {
+    param ($x) 
+    
+    #$x = $Menugauche.SelectedItem
         foreach($game in $script:jeutrouve) {
             if ($x -eq $game.Name) {
                 $gamepath = $game.Gamepath
@@ -489,11 +408,11 @@ $BoutonTransmut.add_Click({
                 Sortlistview $MenuDroite
             }
     }
- })
+}
 
-#Button Untransmut, remove files from gamepath and refresh listview (sort by name)
-$BoutonUnTransmut.add_Click({
-    $x = $Menudroite.SelectedItem
+function UnTransmut {
+    param ($x) 
+
     foreach ($game in $script:jeutrouve) {
         if ($x -eq $game.Name) {
             $gamepath = $game.Gamepath
@@ -520,11 +439,125 @@ $BoutonUnTransmut.add_Click({
             Sortlistview $MenuGauche
         }
     }
+}
+
+
+Add-Type -AssemblyName PresentationFramework
+Add-Type -AssemblyName System.Windows.Forms
+
+#load translation if exist, if not will use en-US.
+Import-LocalizedData -BindingVariable txt
+
+# check if Dsoal_alchemy.ini already exist, if not check for Creative alchemy file or use template to generate new dsoal_alchemy.
+$PathALchemy = LocateAlchemy
+if (!(Test-Path -path "$PSScriptRoot\Dsoal_alchemy.ini")) {
+    if ($PathALchemy -ne "False") {
+        GenerateNewAlchemy "$PathALchemy\Alchemy.ini"
+    } else {
+            Copy-item $PSScriptRoot\Games.template $PSScriptRoot\Dsoal_alchemy.ini
+        }
+}
+
+$script:listejeux = Read-File "$PSScriptRoot\Dsoal_alchemy.ini"
+CheckInstall $script:listejeux | Out-Null
+$script:jeutrouve = $script:listejeux | where-object Found -eq $true
+#$jeutrouve | Out-GridView		#debug
+CheckTransmut $script:jeutrouve | Out-Null
+$jeutransmut = $script:jeutrouve | where-object Transmut -eq $true
+$jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.Transmut -eq $False}
+
+# Main windows
+[xml]$inputXML = @"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        Title="Dsoal Alchemy" Height="417" Width="818" MinHeight="417" MinWidth="818" ResizeMode="CanResizeWithGrip" Icon="$PSScriptRoot\dsoal_alchemy.ico">
+    <Viewbox Stretch="Uniform" StretchDirection="UpOnly">
+        <Grid>
+            <ListView Name="MenuGauche" HorizontalAlignment="Left" Height="280" Margin="20,75,0,0" VerticalAlignment="Top" Width="310">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Width="300"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <ListView Name="MenuDroite" HorizontalAlignment="Left" Height="280" Margin="472,75,20,0" VerticalAlignment="Top" Width="310">
+            <ListView.View>
+                    <GridView>
+                        <GridViewColumn Width="300"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <Button Name="BoutonTransmut" Content="&gt;&gt;" HorizontalAlignment="Left" Height="45" Margin="350,100,0,0" VerticalAlignment="Top" Width="100"/>
+            <Button Name="BoutonUnTransmut" Content="&lt;&lt;" HorizontalAlignment="Left" Height="45  " Margin="350,163,0,0" VerticalAlignment="Top" Width="100"/>
+            <Button Name="BoutonEdition" HorizontalAlignment="Left" Height="25" Margin="350,256,0,0" VerticalAlignment="Top" Width="100"/>
+            <Button Name="BoutonAjouter" HorizontalAlignment="Left" Height="25" Margin="350,293,0,0" VerticalAlignment="Top" Width="100"/>
+            <Button Name="BoutonParDefaut" HorizontalAlignment="Left" Height="25" Margin="350,330,0,0" VerticalAlignment="Top" Width="100"/>
+            <TextBlock Name="Text_main" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,10,0,0" Width="762" Height="34"/>
+            <TextBlock Name="Text_jeuInstall" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,54,0,0" Width="238"/>
+            <TextBlock Name="Text_JeuTransmut" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="472,54,0,0" Width="173"/>
+            <TextBlock Name="T_URL" HorizontalAlignment="Left" TextWrapping="Wrap" Text="https://github.com/Choum28/DSOAL_Alchemy" VerticalAlignment="Top" Margin="20,361,0,0" FontSize="8"/>
+            <TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.3" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
+        </Grid>
+    </Viewbox>
+</Window>
+
+"@
+$reader = (New-Object System.Xml.XmlNodeReader $inputXML)
+$Window = [Windows.Markup.XamlReader]::Load( $reader )
+$inputXML.SelectNodes("//*[@Name]") | Foreach-Object { Set-Variable -Name ($_.Name) -Value $Window.FindName($_.Name)}
+
+$BoutonEdition.Content = $txt.BoutonEditionContent
+$BoutonAjouter.Content = $txt.BoutonAjouterContent
+$BoutonParDefaut.Content = $txt.BoutonDefaultContent
+$Text_main.Text = $txt.Text_main
+$Text_jeuInstall.Text = $txt.Text_jeuInstall
+$Text_JeuTransmut.Text = $txt.Text_JeuTransmut
+
+# populate each listview, disable counter output in terminal
+$MenuGauche.Items.Clear()
+foreach ($jeu in $jeunontransmut) {
+    $MenuGauche.Items.Add($jeu.name) | Out-Null
+}
+Sortlistview $MenuGauche
+
+$MenuDroite.Items.Clear()
+foreach ($jeu in $jeutransmut) {
+    $MenuDroite.Items.Add($jeu.name) | Out-Null
+}
+Sortlistview $MenuDroite
+ 
+#Transmut Button Copy required file to gamepath, refresh listview (sort by name)
+$BoutonTransmut.add_Click({
+    Transmut $MenuGauche.SelectedItem
+ })
+
+#Button Untransmut, remove files from gamepath and refresh listview (sort by name)
+$BoutonUnTransmut.add_Click({
+    UnTransmut $MenuDroite.SelectedItem
+})
+
+$MenuGauche.Add_MouseDoubleClick({
+    if ($MenuGauche.SelectedItem -ne $null) {
+        Transmut $MenuGauche.SelectedItem
+    }
+})
+
+$MenuDroite.Add_MouseDoubleClick({
+    if ($MenuDroite.SelectedItem -ne $null) {
+        UnTransmut $MenuDroite.SelectedItem
+    }
+})
+
+$MenuDroite.Add_SelectionChanged({
+    $script:lastSelectedListView = $MenuDroite
+})
+
+$MenuGauche.Add_SelectionChanged({
+    $script:lastSelectedListView = $MenuGauche
 })
 
 ### EDIT BUTTON, Check each mandatory info, add them to global var, and update Dsoal_alchemy file entry.
 $BoutonEdition.add_Click({
-    $x = $MenuGauche.SelectedItem
+    $x = $script:lastSelectedListView.SelectedItem
     if (!($x -eq $null)) {
         [xml]$InputXML = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -884,7 +917,11 @@ $BoutonEdition.add_Click({
                 $file[$LineNumber +4] = "x64=$x64"
                 $file[$LineNumber +5] = "Conf=$Conf"
                 $file | Set-Content $PSScriptRoot\Dsoal_alchemy.ini -encoding ascii
-                
+                # Update file/conf if game is already transmuted (Re-transmut)
+                if ( $script:lastSelectedListView -eq $MenuDroite ) {
+                    $MenuDroite.Items.Remove($x)
+                    Transmut $x
+                    }
                 $Window_edit.Close()
                 }
         })
