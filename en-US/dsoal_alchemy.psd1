@@ -26,8 +26,11 @@ ConvertFrom-StringData @'
 	C_RootdirContent=Install into both Root and Sub Folders
 	C_x64Content=64-bit game
 	C_x64ToolTip=if checked, install 64 bits (x86-64) wrapper and drivers dll in the game folder, shoud be used only with very rare directsound 3d 64bits games.
+	FolderChoice=Select a Folder
+	SubFolderChoice=Select a Sub Folder
 	# Error message
-	Badlocation=NewAlchemy required Creative Alchemy installation.
+	Badlocation=Cannot read the installLocation registry key of your creative alchemy installation.
+	MissFile=Mandatory file missing in 
 	RegKeyInc=Registry key value incorrect
 	RegKeyValInc=Registry key value does not return a Path
 	RegKeyBad=Registry key invalid
