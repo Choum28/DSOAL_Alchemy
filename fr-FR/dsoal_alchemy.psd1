@@ -29,7 +29,8 @@ ConvertFrom-StringData @'
 	FolderChoice=Sélectionnez un dossier
 	SubFolderChoice=Sélectionnez un sous-dossier
 	# Error message
-	MissFile=Fichier nécéssaire manquant dans le dossier du gestionnaire de jeu DSOAL
+	Badlocation=Impossible de lire la valeur de la clef registre installLocation de votre installation creative alchemy
+	MissFile=Fichier nécéssaire manquant dans le dossier 
 	RegKeyInc=Valeur de la clef registre incorrect
 	RegKeyValInc=La clef registre ne renvoie pas un chemin
 	RegKeyBad=La clef registre est invalide
