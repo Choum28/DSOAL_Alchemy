@@ -187,8 +187,8 @@ function GenerateNewAlchemy {
         $h = $line.SubDir
         $i = $line.RootDirInstallOption
         $j = $Line.x64
-        $h = $Line.Conf
-        "[$a]`r`nRegPath=$b`r`nGamePath=$c`r`nSubDir=$h`r`nRootDirInstallOption=$i`r`nx64=$j`r`nConf=$h`r`n" | Out-File -Append $PSScriptRoot\Dsoal_alchemy.ini -encoding ascii
+        $k = $Line.Conf
+        "[$a]`r`nRegPath=$b`r`nGamePath=$c`r`nSubDir=$h`r`nRootDirInstallOption=$i`r`nx64=$j`r`nConf=$k`r`n" | Out-File -Append $PSScriptRoot\Dsoal_alchemy.ini -encoding ascii
     }
 }
 
