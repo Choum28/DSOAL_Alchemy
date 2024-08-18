@@ -25,11 +25,14 @@
     AUTHOR:    Choum
 
     VERSION HISTORY:
+    1.4     17.08.2024    Add SHA 256 CRC check on soft_oal.dll & dsound.dll (32&64bits)
+                          games that will not have same dlls as one in dsoal_alchemy folder will not appears in "Enabled list".
+                          this will make dll version upgrades easier.
     1.3     15.08.2024    Add doubleclick support to transmut/Untransmut, possibility to edit from both Listview.
     1.22    04.08.2024    Test subdir path (if filled) before adding game to the detected list on startup.
     1.21    25.07.2024    Considerably improves launch loading time by improving CheckPresent function.
-    1.2     24.07.2024    Add openalsoft configuration support.
-    1.1     22.07.2024    Add 64bits support
+    1.2     24.07.2024    Add openalsoft configuration (ini) support.
+    1.1     22.07.2024    Add 64bits game support (specific dlls needed)
                           Alchemy.ini is optionnal on first launch for gamelist creation
                           If Creative alchemy is installed, the script will use the alchemy.ini file to 
                           create the gamelist instead of default one.
@@ -62,23 +65,19 @@ function LocateAlchemy {
     }
     if ([Environment]::Is64BitOperatingSystem -eq $true) {
         $key = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{12321490-F573-4815-B6CC-7ABEF18C9AC4}"
-    } else {
-        $key = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{12321490-F573-4815-B6CC-7ABEF18C9AC4}"
-    }
+    } else { $key = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{12321490-F573-4815-B6CC-7ABEF18C9AC4}" }
     $regkey = "InstallLocation"
     if (test-path $key) {
         try { 
         $d = Get-ItemPropertyvalue -Path $key -name $regkey 
         }
-        catch { 
+        catch {
             [System.Windows.MessageBox]::Show($txt.Badlocation,"",0,16)
             exit
         }
         if ([System.IO.File]::Exists("$d\alchemy.ini")) {
                 return $d
-            } else {
-                [System.Windows.MessageBox]::Show("$($txt.missfile) $d\alchemy.ini","",0,	16)
-            }
+        } else { [System.Windows.MessageBox]::Show("$($txt.missfile) $d\alchemy.ini","",0,	16) }
     } else {
         $d = "False"
         return $d
@@ -189,7 +188,7 @@ function GenerateNewAlchemy {
         $i = $line.RootDirInstallOption
         $j = $Line.x64
         $h = $Line.Conf
-        "[$a]`rRegPath=$b`rGamePath=$c`rSubDir=$h`rRootDirInstallOption=$i`rx64=$j`rConf=$h`r`n" | Out-File -Append $PSScriptRoot\Dsoal_alchemy.ini -encoding ascii
+        "[$a]`r`nRegPath=$b`r`nGamePath=$c`r`nSubDir=$h`r`nRootDirInstallOption=$i`r`nx64=$j`r`nConf=$h`r`n" | Out-File -Append $PSScriptRoot\Dsoal_alchemy.ini -encoding ascii
     }
 }
 
@@ -234,18 +233,10 @@ function CheckPresent{
             if (![string]::IsNullOrEmpty($a.SubDir)){
                 if ([System.IO.Directory]::Exists("$($a.GamePath)\$($a.SubDir)")) {
                     $a.Found = $true
-                } else { 
-                    $a.Found = $false 
-                }
-            } else {
-                $a.Found = $true 
-            }
-        } else {
-            $a.Found = $false
-        }
-    } else {
-        $a.Found = $false
-    }
+                } else { $a.Found = $false }
+            } else { $a.Found = $true }
+        } else { $a.Found = $false }
+    } else { $a.Found = $false }
     return $a
 }
 
@@ -263,7 +254,7 @@ function CheckInstall {
     return $liste
 }
 
-# Check if game is transmuted (dsoal-aldrv.dll + dsound present)
+# Check if game is transmuted (dsoal-aldrv.dll + dsound present with correct Hash)
 function checkTransmut {
     param(
         $liste
@@ -273,50 +264,95 @@ function checkTransmut {
     foreach ($game in $liste){
         $gamepath = $game.Gamepath
         $Subdir = $game.SubDir
+        $x64 = $game.x64
         $RootDirInstallOption = $game.RootDirInstallOption
-        if ([string]::IsNullOrEmpty($Subdir)){
-            if ([System.IO.File]::Exists("$gamepath\dsoal-aldrv.dll")) {
-                if ([System.IO.File]::Exists("$gamepath\dsound.dll")) {
-                    $game.Transmut = $true
-                } else {
-                    $game.Transmut = $false
-                }
-            } else {
-                $game.Transmut = $false
-            }
-        } elseif ( $RootDirInstallOption -eq $False ) {
-            if ([System.IO.File]::Exists("$gamepath\$Subdir\dsoal-aldrv.dll")) {
-                if ([System.IO.File]::Exists("$gamepath\$Subdir\dsound.dll")) {
-                    $game.Transmut = $true
-                } else {
-                    $game.Transmut = $false
-                }
-            } else {
-                $game.Transmut = $false
-            }
-        } else { 
+        if ($x64 -eq "False") {
+            if ([string]::IsNullOrEmpty($Subdir)){
                 if ([System.IO.File]::Exists("$gamepath\dsoal-aldrv.dll")) {
-                    if ([System.IO.File]::Exists("$gamepath\dsound.dll")) {
-                        if ([System.IO.File]::Exists("$gamepath\$Subdir\dsoal-aldrv.dll")) {
-                            if ([System.IO.File]::Exists("$gamepath\$Subdir\dsound.dll")){
-                                $game.Transmut = $true 
-                            } else {
-                                $game.Transmut = $false 
-                            }
-                        } else {
-                            $game.Transmut = $false 
-                        }
-                    } else {
-                        $game.Transmut = $false 
-                    }
-                } else { 
-                    $game.Transmut = $false 
-                }
-          }
+                    if (CheckHash $gamepath\dsoal-aldrv.dll $script:OalHash) {
+                        if ([System.IO.File]::Exists("$gamepath\dsound.dll")) {
+                            $game.Transmut = CheckHash $gamepath\dsound.dll $script:dsoundHash
+                        } else { $game.Transmut = $false }
+                    } else { $game.Transmut = $false }
+                } else { $game.Transmut = $false }
+            } elseif ( $RootDirInstallOption -eq $False ) {
+                if ([System.IO.File]::Exists("$gamepath\$Subdir\dsoal-aldrv.dll")) {
+                    if (CheckHash $gamepath\$Subdir\dsoal-aldrv.dll $script:OalHash) {
+                        if ([System.IO.File]::Exists("$gamepath\$Subdir\dsound.dll")) {
+                            $game.Transmut = CheckHash $gamepath\$Subdir\dsound.dll $script:dsoundHash
+                        } else { $game.Transmut = $false }
+                    } else { $game.Transmut = $false }
+                } else { $game.Transmut = $false }
+            } else { 
+                    if ([System.IO.File]::Exists("$gamepath\dsoal-aldrv.dll")) {
+                        if (CheckHash $gamepath\dsoal-aldrv.dll $script:OalHash) {
+                            if ([System.IO.File]::Exists("$gamepath\dsound.dll")) {
+                                if (CheckHash $gamepath\dsound.dll $script:dsoundHash){
+                                    if ([System.IO.File]::Exists("$gamepath\$Subdir\dsoal-aldrv.dll")) {
+                                        if (CheckHash $gamepath\$Subdir\dsoal-aldrv.dll $script:OalHash) {
+                                            if ([System.IO.File]::Exists("$gamepath\$Subdir\dsound.dll")){
+                                                $game.Transmut = CheckHash $gamepath\$Subdir\dsound.dll $script:dsoundHash
+                                            } else { $game.Transmut = $false }
+                                        } else { $game.Transmut = $false }
+                                    } else { $game.Transmut = $false }
+                                } else { $game.Transmut = $false }
+                            } else { $game.Transmut = $false}
+                        } else { $game.Transmut = $false }
+                    } else { $game.Transmut = $false }
+              }
+        } else {
+            #x64
+            if ([string]::IsNullOrEmpty($Subdir)){
+                if ([System.IO.File]::Exists("$gamepath\dsoal-aldrv.dll")) {
+                    if (CheckHash $gamepath\dsoal-aldrv.dll $script:OalHashx64) {
+                        if ([System.IO.File]::Exists("$gamepath\dsound.dll")) {
+                            $game.Transmut = CheckHash $gamepath\dsound.dll $script:dsoundHashx64
+                        } else { $game.Transmut = $false }
+                    } else { $game.Transmut = $false }
+                } else { $game.Transmut = $false }
+            } elseif ( $RootDirInstallOption -eq $False ) {
+                if ([System.IO.File]::Exists("$gamepath\$Subdir\dsoal-aldrv.dll")) {
+                    if (CheckHash $gamepath\$Subdir\dsoal-aldrv.dll $script:OalHashx64) {
+                        if ([System.IO.File]::Exists("$gamepath\$Subdir\dsound.dll")) {
+                            $game.Transmut = CheckHash $gamepath\$Subdir\dsound.dll $script:dsoundHashx64
+                        } else { $game.Transmut = $false }
+                    } else { $game.Transmut = $false }
+                } else { $game.Transmut = $false }
+            } else { 
+                    if ([System.IO.File]::Exists("$gamepath\dsoal-aldrv.dll")) {
+                        if (CheckHash $gamepath\dsoal-aldrv.dll $script:OalHashx64) {
+                            if ([System.IO.File]::Exists("$gamepath\dsound.dll")) {
+                                if (CheckHash $gamepath\dsound.dll $script:dsoundHashx64){
+                                    if ([System.IO.File]::Exists("$gamepath\$Subdir\dsoal-aldrv.dll")) {
+                                        if (CheckHash $gamepath\$Subdir\dsoal-aldrv.dll $script:OalHashx64) {
+                                            if ([System.IO.File]::Exists("$gamepath\$Subdir\dsound.dll")){
+                                                $game.Transmut = CheckHash $gamepath\$Subdir\dsound.dll $script:dsoundHashx64
+                                            } else { $game.Transmut = $false }
+                                        } else { $game.Transmut = $false }
+                                    } else { $game.Transmut = $false }
+                                } else { $game.Transmut = $false }
+                            } else { $game.Transmut = $false }
+                        } else { $game.Transmut = $false }
+                    } else { $game.Transmut = $false }
+              }
+        }
         $liste[$test] = $game
         $test = $test +1 
     }
     return $liste
+}
+
+function CheckHash {
+    param(
+        $filepath,
+        $sourcehash
+    )
+    
+    $destHash = (Get-FileHash -Path $filepath -Algorithm SHA256).Hash
+    if ($sourcehash -ne $destHash) {
+       $correcthash = $False
+    } else { $correcthash = $True }
+    return $correcthash
 }
 
 function Sortlistview {
@@ -345,34 +381,26 @@ function CheckFiles {
             if ($script:dsoundHash -ne $destHash) {
                 Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
             }
-        }else {
-            Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath
-        }
+        } else { Copy-Item -Path "$PSScriptRoot\x86\dsound.dll" -Destination $gamepath }
         if ([System.IO.File]::Exists("$gamepath\dsoal-aldrv.dll")){
             $destHash = (Get-FileHash -Path "$gamepath\dsoal-aldrv.dll" -Algorithm SHA256).Hash
             if ($script:OalHash -ne $destHash) {
                 Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
             }
-        } else {
-            Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
-        }
+        } else { Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll }
     } else {
         if ([System.IO.File]::Exists("$gamepath\dsound.dll")){
             $destHash = (Get-FileHash -Path "$gamepath\dsound.dll" -Algorithm SHA256).Hash
             if ($script:dsoundHashx64 -ne $destHash) {
                 Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
             }
-        }else {
-            Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath
-        }
+        } else { Copy-Item -Path "$PSScriptRoot\x86-64\dsound.dll" -Destination $gamepath }
         if ([System.IO.File]::Exists("$gamepath\dsoal-aldrv.dll")){
             $destHash = (Get-FileHash -Path "$gamepath\dsoal-aldrv.dll" -Algorithm SHA256).Hash
             if ($script:OalHashx64 -ne $destHash) {
                 Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
             }
-        } else {
-            Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
-        }
+        } else { Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll }
     }
 }
 
@@ -534,9 +562,7 @@ $PathALchemy = LocateAlchemy
 if (!(Test-Path -path "$PSScriptRoot\Dsoal_alchemy.ini")) {
     if ($PathALchemy -ne "False") {
         GenerateNewAlchemy "$PathALchemy\Alchemy.ini"
-    } else {
-            Copy-item $PSScriptRoot\Games.template $PSScriptRoot\Dsoal_alchemy.ini
-        }
+    } else { Copy-item $PSScriptRoot\Games.template $PSScriptRoot\Dsoal_alchemy.ini }
 }
 
 $script:OalHash = (Get-FileHash -Path "$PSScriptRoot\x86\soft_oal.dll" -Algorithm SHA256).Hash 
@@ -581,7 +607,7 @@ $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.T
             <TextBlock Name="Text_jeuInstall" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,54,0,0" Width="238"/>
             <TextBlock Name="Text_JeuTransmut" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="472,54,0,0" Width="173"/>
             <TextBlock Name="T_URL" HorizontalAlignment="Left" TextWrapping="Wrap" Text="https://github.com/Choum28/DSOAL_Alchemy" VerticalAlignment="Top" Margin="20,361,0,0" FontSize="8"/>
-            <TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.3" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
+            <TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.4" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
         </Grid>
     </Viewbox>
 </Window>
@@ -767,7 +793,7 @@ $BoutonEdition.add_Click({
                     $T_Registre.IsReadOnly=$true
                     $T_Registre.Background = '#e5e5e5'
                     $C_GamePath.IsChecked = $true
-                } else{
+                } else {
                     $T_registre.text = $game.RegPath
                     $T_Gamepath.IsReadOnly = $true
                     $T_Gamepath.Background = '#e5e5e5'
@@ -986,23 +1012,20 @@ $BoutonEdition.add_Click({
                 $Name = $T_titrejeu.text
                 if ($C_x64.IsChecked) {
                     $x64 = "True"
-                } else {
-                    $x64 = "False"
-                }
+                } else { $x64 = "False" }
+                
                 if ($C_Rootdir.IsChecked) {
                     $RootDirInstallOption = "True"
-                } else {
-                    $RootDirInstallOption = "False"
-                }
+                } else { $RootDirInstallOption = "False" }
+                
                 if ($C_SubDir.IsUnChecked) {
                     $SubDir = ""
                     $RootDirInstallOption = "False"
                 }
+                
                 if ($C_Conf.IsChecked) {
                     $Conf = $C_ListConf.SelectedItem
-                } else {
-                    $Conf = ""
-                }
+                } else { $Conf = "" }
                 
                 # Update list game to reflect change    
                 $script:jeutrouve[$count].RegPath = $RegPath
@@ -1241,9 +1264,7 @@ $BoutonAjouter.add_Click({
                     $Subdir = $Subdir.Trimstart("\")
                     if (test-path $Gamepath\$Subdir) {
                         $T_Subdir.text = $Subdir
-                    } else { 
-                        [System.Windows.MessageBox]::Show($txt.BadPathOrSub,"",0,48)
-                    }
+                    } else { [System.Windows.MessageBox]::Show($txt.BadPathOrSub,"",0,48) }
                 }
             }
         }
@@ -1312,9 +1333,8 @@ $BoutonAjouter.add_Click({
                 [System.Windows.MessageBox]::Show($txt.RegKeyEmpty,"",0,64)
                 $fail = $true
              }
-        } else {
-            $Gamepath = $T_Gamepath.text
-        }    
+        } else { $Gamepath = $T_Gamepath.text }
+        
         if ($fail -eq $False) {
             if ([string]::IsNullOrEmpty($Gamepath)) {
                 $fail = $true
@@ -1340,23 +1360,19 @@ $BoutonAjouter.add_Click({
             $Name = $T_titrejeu.text
             if ($C_x64.IsChecked) {
                 $x64 = "True"
-            } else {
-                $x64 = "False"
-            }
+            } else { $x64 = "False" }
+            
             if ($C_Rootdir.IsChecked) {
                 $RootDirInstallOption = "True"
-            } else {
-                $RootDirInstallOption = "False"
-            }
+            } else { $RootDirInstallOption = "False" }
+            
             if ($C_SubDir.IsUnchecked) {
                 $SubDir = ""
                 $RootDirInstallOption = "False"
             }
             if ($C_Conf.IsChecked) {
                 $Conf = $C_ListConf.SelectedItem
-            } else {
-                $Conf = ""
-            }
+            } else { $Conf = "" }
 
             # Write change in file, Registry first, Gamepath second choice
             if ($regprio -eq $true) {
@@ -1366,7 +1382,7 @@ $BoutonAjouter.add_Click({
                 $RegPath = ""
                 $Gamepath = $T_Gamepath.text
             }
-            "[$Name]`rRegPath=$RegPath`rGamePath=$Gamepath`rSubDir=$SubDir`rRootDirInstallOption=$RootDirInstallOption`rx64=$x64`rConf=$Conf`r`n"| Out-File -Append $PSScriptRoot\Dsoal_alchemy.ini -encoding ascii
+            "[$Name]`r`nRegPath=$RegPath`r`nGamePath=$Gamepath`r`nSubDir=$SubDir`r`nRootDirInstallOption=$RootDirInstallOption`r`nx64=$x64`r`nConf=$Conf`r`n"| Out-File -Append $PSScriptRoot\Dsoal_alchemy.ini -encoding ascii
 
             # Update list game to reflect change, Order listview by name
             $script:listejeux += Add-Game -Name $Name -RegPath $RegPath -Gamepath $Gamepath -SubDir $SubDir -RootDirInstallOption $RootDirInstallOption -x64 $x64 -Found $True -Transmut $False      
@@ -1400,14 +1416,12 @@ $BoutonAjouter.add_Click({
 
 ### Default Button (MAIN FORM)
 $BoutonParDefaut.add_Click({
-    $choice = [System.Windows.MessageBox]::Show("$($txt.Defaultmsgbox)`r$($txt.Defaultmsgbox2)`r$($PSScriptRoot)\Dsoal_alchemy.bak`r`r$($txt.Defaultmsgbox3)" , "Dsoal Alchemy" , 4,64)
+    $choice = [System.Windows.MessageBox]::Show("$($txt.Defaultmsgbox)`r`n$($txt.Defaultmsgbox2)`r`n$($PSScriptRoot)\Dsoal_alchemy.bak`r`n`r`n$($txt.Defaultmsgbox3)" , "Dsoal Alchemy" , 4,64)
     if ($choice -eq 'Yes') {
         move-Item "$PSScriptRoot\Dsoal_alchemy.ini" "$PSScriptRoot\Dsoal_alchemy.Bak" -force
-        if (Test-path -path $PSScriptRoot\alchemy.ini) {
+        if (Test-path -path $PathALchemy\alchemy.ini) {
             GenerateNewAlchemy "$PathALchemy\Alchemy.ini"
-        } else {
-            Copy-item $PSScriptRoot\Games.template $PSScriptRoot\Dsoal_alchemy.ini
-        }
+        } else { Copy-item $PSScriptRoot\Games.template $PSScriptRoot\Dsoal_alchemy.ini }
         $script:listejeux = Read-File "$PSScriptRoot\Dsoal_alchemy.ini"
         CheckInstall $script:listejeux | Out-Null
         $script:jeutrouve = $script:listejeux | where-object Found -eq $true
@@ -1415,16 +1429,12 @@ $BoutonParDefaut.add_Click({
         $jeutransmut = $script:jeutrouve | where-object Transmut -eq $true
         $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.Transmut -eq $False}
         $MenuGauche.Items.Clear()
+        $MenuDroite.Items.Clear()
         $BoutonEdition.IsEnabled=$False
         $BoutonTransmut.IsEnabled=$False
         $BoutonUnTransmut.IsEnabled=$False
-        foreach ($jeu in $jeunontransmut) {
-            $MenuGauche.Items.Add($jeu.name) | Out-Null
-        }
-        $MenuDroite.Items.Clear()
-        foreach ($jeu in $jeutransmut) {
-            $MenuDroite.Items.Add($jeu.name) | Out-Null
-        }
+        foreach ($jeu in $jeunontransmut) { $MenuGauche.Items.Add($jeu.name) | Out-Null }
+        foreach ($jeu in $jeutransmut) { $MenuDroite.Items.Add($jeu.name) | Out-Null }
     }
 })
 
