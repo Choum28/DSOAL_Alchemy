@@ -7,7 +7,7 @@
 ;  RootDirInstallOption <-- option to install translator support in both RegPath and SubDir directories (default is False)
 ;  x64 <-- If true it will copy the 64bits wrapper and driver to game folder instead of 32bits one, only usefull for very rare 64bits Directsound 3D games. 
 ;  Conf <-- Openalsoft configuration file to use if defined.
-cdvfbgnh,j
+
 [Alpha Prime]
 RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\Alpha Prime\Alpha Prime\Install_Dir
 GamePath=
@@ -864,7 +864,7 @@ RootDirInstallOption=False
 x64=False
 Conf=
 
-[Dark Messiah Multijoueur]
+[Dark Messiah Multiplayer]
 RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 2130\InstallLocation
 GamePath=
 SubDir=
@@ -960,23 +960,23 @@ RootDirInstallOption=False
 x64=False
 Conf=
 
-[Splinter Cell Chaos Theory Steam]
-RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Ubisoft\Tom Clancy's Splinter Cell Chaos Theory\installdir
+[Splinter Cell Chaos Theory]
+RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\Ubisoft\Tom Clancy's Splinter Cell Chaos Theory\installdir
 GamePath=
 SubDir=system
 RootDirInstallOption=False
 x64=False
 Conf=
 
-[Splinter Cell Chaos Theory Versus Steam]
-RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Ubisoft\Tom Clancy's Splinter Cell Chaos Theory\installdir
+[Splinter Cell Chaos Theory Versus]
+RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\Ubisoft\Tom Clancy's Splinter Cell Chaos Theory\installdir
 GamePath=
 SubDir=Versus\System
 RootDirInstallOption=False
 x64=False
 Conf=
 
-[Splinter Cell Double Agent Solo Steam]
+[Splinter Cell Double Agent Solo]
 RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\Ubisoft\Tom Clancy's Splinter Cell Double Agent\installdir
 GamePath=
 SubDir=SCDA-Offline\System
@@ -984,7 +984,7 @@ RootDirInstallOption=False
 x64=False
 Conf=
 
-[Splinter Cell Double Agent Multi Steam]
+[Splinter Cell Double Agent Multi]
 RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\Ubisoft\Tom Clancy's Splinter Cell Double Agent\installdir
 GamePath=
 SubDir=SCDA-Online\System
@@ -1000,8 +1000,8 @@ RootDirInstallOption=False
 x64=False
 Conf=
 
-[Splinter Cell Pandora Tomorrow Multijoueur]
-RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\UBISOFT\Splinter Cell Pandora Tomorrow\InstalledPath
+[Splinter Cell Pandora Tomorrow Multiplayer]
+RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\UBISOFT\Splinter Cell Pandora Tomorrow\InstalledPath
 GamePath=
 SubDir=online\System
 RootDirInstallOption=False
@@ -1025,7 +1025,7 @@ x64=False
 Conf=
 
 [Star Wars Episode I Racer]
-RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\LucasArts Entertainment Company LLC\Star Wars: Episode I Racer\v1.0\Install Path
+RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\LucasArts Entertainment Company LLC\Star Wars: Episode I Racer\v1.0\Install Path
 GamePath=
 SubDir=
 RootDirInstallOption=False
@@ -1072,7 +1072,7 @@ RootDirInstallOption=False
 x64=False
 Conf=
 
-[The Witcher Steam]
+[The Witcher]
 RegPath=HKEY_LOCAL_MACHINE\SOFTWARE\CD Projekt Red\The Witcher\InstallFolder
 GamePath=
 SubDir=System
