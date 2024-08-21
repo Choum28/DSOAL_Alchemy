@@ -606,7 +606,7 @@ Sortlistview $MenuDroite | Out-Null
 $BoutonTransmut.add_Click({ 
     Transmut $MenuGauche.SelectedItem
     if ( $Null -eq $MenuGauche.SelectedItem) { $BoutonTransmut.IsEnabled = $False }
-    })
+})
 
 #Button Untransmut, remove files from gamepath and refresh listview (sort by name)
 $BoutonUnTransmut.add_Click({ 
