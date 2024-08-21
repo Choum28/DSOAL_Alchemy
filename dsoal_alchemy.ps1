@@ -44,23 +44,23 @@
 # Check if all required dlls are present and if Creative Alchemy is installed (optionnal)
 function LocateAlchemy { 
     if ( -Not ([System.IO.File]::Exists("$PSScriptRoot\Games.template")) ) {
-        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\Games.template","",0,	16)
+        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\Games.template","",0,16)
         exit
     }
     if ( -Not ([System.IO.File]::Exists("$PSScriptRoot\x86-64\soft_oal.dll")) ) {
-        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\86-64\soft_oal.dll","",0,	16)
+        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\86-64\soft_oal.dll","",0,16)
         exit
     }
     if ( -Not ([System.IO.File]::Exists("$PSScriptRoot\x86-64\dsound.dll")) ) {
-        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\86-64\dsound.dll","",0,	16)
+        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\86-64\dsound.dll","",0,16)
         exit
     }
     if ( -Not ([System.IO.File]::Exists("$PSScriptRoot\x86\soft_oal.dll")) ) {
-        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\x86\soft_oal.dll","",0,	16)
+        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\x86\soft_oal.dll","",0,16)
         exit
     }
     if ( -Not ([System.IO.File]::Exists("$PSScriptRoot\x86\dsound.dll")) ) {
-        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\x86\dsound.dll","",0,	16)
+        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\x86\dsound.dll","",0,16)
         exit
     }
     if ( [Environment]::Is64BitOperatingSystem -eq $true ) {
@@ -75,7 +75,7 @@ function LocateAlchemy {
         }
         if ( [System.IO.File]::Exists("$d\alchemy.ini") ) {
                 return $d
-        } else { [System.Windows.MessageBox]::Show("$($txt.missfile) $d\alchemy.ini","",0,	16) }
+        } else { [System.Windows.MessageBox]::Show("$($txt.missfile) $d\alchemy.ini","",0,16) }
     } else {
         $d = "False"
         return $d
@@ -603,10 +603,16 @@ foreach ( $jeu in $jeutransmut ) { $MenuDroite.Items.Add($jeu.name) | Out-Null }
 Sortlistview $MenuDroite | Out-Null
  
 #Transmut Button Copy required file to gamepath, refresh listview (sort by name)
-$BoutonTransmut.add_Click({ Transmut $MenuGauche.SelectedItem })
+$BoutonTransmut.add_Click({ 
+    Transmut $MenuGauche.SelectedItem
+    if ( $Null -eq $MenuGauche.SelectedItem) { $BoutonTransmut.IsEnabled = $False }
+    })
 
 #Button Untransmut, remove files from gamepath and refresh listview (sort by name)
-$BoutonUnTransmut.add_Click({ UnTransmut $MenuDroite.SelectedItem })
+$BoutonUnTransmut.add_Click({ 
+    UnTransmut $MenuDroite.SelectedItem
+    if ( $Null -eq $MenuDroite.SelectedItem) { $BoutonUnTransmut.IsEnabled = $False }
+})
 
 $MenuGauche.Add_MouseDoubleClick({
     if ( $Null -ne $MenuGauche.SelectedItem ) {
