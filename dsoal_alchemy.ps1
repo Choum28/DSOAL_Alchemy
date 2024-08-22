@@ -574,8 +574,8 @@ $Window.WindowStartupLocation = "CenterScreen"
 $Window.Background = "LightSteelBlue"
 $MenuGauche.Background = "SlateGray"
 $Menudroite.Background = "SlateGray"
-$Menudroite.Foreground = "Ivory"
-$MenuGauche.Foreground = "Ivory"
+$Menudroite.Foreground = "White"
+$MenuGauche.Foreground = "White"
 
 $BoutonTransmut.IsEnabled = $False
 $BoutonUnTransmut.IsEnabled = $False
