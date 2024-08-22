@@ -25,6 +25,7 @@
     AUTHOR:    Choum
 
     VERSION HISTORY:
+    1.5     22.08.2024    Add WPF Background colors, remove useless GridViewColumn
     1.4     17.08.2024    Add SHA 256 CRC check on soft_oal.dll & dsound.dll (32&64bits)
                           games that will not have same dlls as one in dsoal_alchemy folder will not appears in "Enabled list".
                           this will make dll version upgrades easier.
@@ -546,7 +547,7 @@ $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.T
 # Main windows
 [xml]$inputXML = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        Title="Dsoal Alchemy" Height="417" Width="818" MinHeight="417" MinWidth="818" ResizeMode="CanResizeWithGrip" Icon="$PSScriptRoot\dsoal_alchemy.ico">
+    Title="Dsoal Alchemy" Height="417" Width="818" MinHeight="417" MinWidth="818" ResizeMode="CanResizeWithGrip" Icon="$PSScriptRoot\dsoal_alchemy.ico">
     <Viewbox Stretch="Uniform" StretchDirection="UpOnly">
         <Grid>
             <ListView Name="MenuGauche" HorizontalAlignment="Left" Height="280" Margin="20,75,0,0" VerticalAlignment="Top" Width="310"></ListView>
@@ -560,7 +561,7 @@ $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.T
             <TextBlock Name="Text_jeuInstall" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,54,0,0" Width="238"/>
             <TextBlock Name="Text_JeuTransmut" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="472,54,0,0" Width="173"/>
             <TextBlock Name="T_URL" HorizontalAlignment="Left" TextWrapping="Wrap" Text="https://github.com/Choum28/DSOAL_Alchemy" VerticalAlignment="Top" Margin="20,361,0,0" FontSize="8"/>
-            <TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.4" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
+            <TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.5" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
         </Grid>
     </Viewbox>
 </Window>
@@ -570,6 +571,11 @@ $reader = (New-Object System.Xml.XmlNodeReader $inputXML)
 $Window = [Windows.Markup.XamlReader]::Load( $reader )
 $inputXML.SelectNodes("//*[@Name]") | Foreach-Object { Set-Variable -Name ($_.Name) -Value $Window.FindName($_.Name)}
 $Window.WindowStartupLocation = "CenterScreen"
+$Window.Background = "LightSteelBlue"
+$MenuGauche.Background = "SlateGray"
+$Menudroite.Background = "SlateGray"
+$Menudroite.Foreground = "Ivory"
+$MenuGauche.Foreground = "Ivory"
 
 $BoutonTransmut.IsEnabled = $False
 $BoutonUnTransmut.IsEnabled = $False
@@ -670,6 +676,7 @@ $BoutonEdition.add_Click({
         $inputXML.SelectNodes("//*[@Name]") | Foreach-Object { Set-Variable -Name ($_.Name) -Value $Window_edit.FindName($_.Name)}
         $Window_edit.WindowStartupLocation = "CenterScreen"
 
+        $Window_edit.Background = "LightSteelBlue"
         $T_Titrejeu.IsReadOnly = $true
         $T_Titrejeu.Background = '#e5e5e5'
         $Window_edit.Title = $txt.MainTitle2    
@@ -1032,7 +1039,7 @@ $BoutonAjouter.add_Click({
     $Window_add = [Windows.Markup.XamlReader]::Load( $reader )
     $inputXML.SelectNodes("//*[@Name]") | Foreach-Object { Set-Variable -Name ($_.Name) -Value $Window_add.FindName($_.Name)}
     $Window_add.WindowStartupLocation = "CenterScreen"
-    
+    $Window_add.Background = "LightSteelBlue"
     # WPF Content, tooltip values
     $Window_add.Title = $txt.MainTitle2    
     $C_Gamepath.Content = $txt.C_GamepathContent
