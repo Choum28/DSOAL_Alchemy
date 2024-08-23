@@ -548,10 +548,16 @@ $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.T
 [xml]$inputXML = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     Title="Dsoal Alchemy" Height="417" Width="818" MinHeight="417" MinWidth="818" ResizeMode="CanResizeWithGrip" Icon="$PSScriptRoot\dsoal_alchemy.ico">
+    <Window.Background>
+        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="#83baf0" Offset="0" />
+            <GradientStop Color="#5aa3eb" Offset="1" />
+        </LinearGradientBrush>
+    </Window.Background>
     <Viewbox Stretch="Uniform" StretchDirection="UpOnly">
         <Grid>
-            <ListView Name="MenuGauche" HorizontalAlignment="Left" Height="280" Margin="20,75,0,0" VerticalAlignment="Top" Width="310"></ListView>
-            <ListView Name="MenuDroite" HorizontalAlignment="Left" Height="280" Margin="472,75,20,0" VerticalAlignment="Top" Width="310"></ListView>
+            <ListView Name="MenuGauche" HorizontalAlignment="Left" Height="280" Margin="20,75,0,0" VerticalAlignment="Top" Width="310"/>
+            <ListView Name="MenuDroite" HorizontalAlignment="Left" Height="280" Margin="472,75,20,0" VerticalAlignment="Top" Width="310"/>
             <Button Name="BoutonTransmut" Content="&gt;&gt;" HorizontalAlignment="Left" Height="45" Margin="350,100,0,0" VerticalAlignment="Top" Width="100"/>
             <Button Name="BoutonUnTransmut" Content="&lt;&lt;" HorizontalAlignment="Left" Height="45  " Margin="350,163,0,0" VerticalAlignment="Top" Width="100"/>
             <Button Name="BoutonEdition" HorizontalAlignment="Left" Height="25" Margin="350,256,0,0" VerticalAlignment="Top" Width="100"/>
@@ -571,9 +577,8 @@ $reader = (New-Object System.Xml.XmlNodeReader $inputXML)
 $Window = [Windows.Markup.XamlReader]::Load( $reader )
 $inputXML.SelectNodes("//*[@Name]") | Foreach-Object { Set-Variable -Name ($_.Name) -Value $Window.FindName($_.Name)}
 $Window.WindowStartupLocation = "CenterScreen"
-$Window.Background = "LightSteelBlue"
-$MenuGauche.Background = "SlateGray"
-$Menudroite.Background = "SlateGray"
+$MenuGauche.Background = "#007ba7"
+$Menudroite.Background = "#007ba7"
 $Menudroite.Foreground = "White"
 $MenuGauche.Foreground = "White"
 
@@ -648,7 +653,13 @@ $BoutonEdition.add_Click({
     if ( !($Null -eq $x) ) {
         [xml]$InputXML = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        Height="361" Width="557" MinHeight="361" MinWidth="557" VerticalAlignment="Bottom" ResizeMode="CanResizeWithGrip" Icon="$PSScriptRoot\dsoal_alchemy.ico">
+    Height="361" Width="557" MinHeight="361" MinWidth="557" VerticalAlignment="Bottom" ResizeMode="CanResizeWithGrip" Icon="$PSScriptRoot\dsoal_alchemy.ico">
+    <Window.Background>
+        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="#83baf0" Offset="0" />
+            <GradientStop Color="#5aa3eb" Offset="1" />
+        </LinearGradientBrush>
+    </Window.Background>
     <Viewbox Stretch="Uniform" StretchDirection="UpOnly">
     <Grid>
         <Label Name ="L_GameTitle" HorizontalAlignment="Left" Margin="67,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.526,0"/>
@@ -676,7 +687,6 @@ $BoutonEdition.add_Click({
         $inputXML.SelectNodes("//*[@Name]") | Foreach-Object { Set-Variable -Name ($_.Name) -Value $Window_edit.FindName($_.Name)}
         $Window_edit.WindowStartupLocation = "CenterScreen"
 
-        $Window_edit.Background = "LightSteelBlue"
         $T_Titrejeu.IsReadOnly = $true
         $T_Titrejeu.Background = '#e5e5e5'
         $Window_edit.Title = $txt.MainTitle2    
@@ -1012,7 +1022,13 @@ $BoutonEdition.add_Click({
 $BoutonAjouter.add_Click({
     [xml]$InputXML = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        Height="361" Width="557" MinHeight="361" MinWidth="557" VerticalAlignment="Bottom" ResizeMode="CanResizeWithGrip" Icon="$PSScriptRoot\dsoal_alchemy.ico">
+    Height="361" Width="557" MinHeight="361" MinWidth="557" VerticalAlignment="Bottom" ResizeMode="CanResizeWithGrip" Icon="$PSScriptRoot\dsoal_alchemy.ico">
+    <Window.Background>
+        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="#83baf0" Offset="0" />
+            <GradientStop Color="#5aa3eb" Offset="1" />
+        </LinearGradientBrush>
+    </Window.Background>
     <Viewbox Stretch="Uniform" StretchDirection="UpOnly">
     <Grid>
         <Label Name ="L_GameTitle" HorizontalAlignment="Left" Margin="67,13,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.526,0"/>
@@ -1039,7 +1055,6 @@ $BoutonAjouter.add_Click({
     $Window_add = [Windows.Markup.XamlReader]::Load( $reader )
     $inputXML.SelectNodes("//*[@Name]") | Foreach-Object { Set-Variable -Name ($_.Name) -Value $Window_add.FindName($_.Name)}
     $Window_add.WindowStartupLocation = "CenterScreen"
-    $Window_add.Background = "LightSteelBlue"
     # WPF Content, tooltip values
     $Window_add.Title = $txt.MainTitle2    
     $C_Gamepath.Content = $txt.C_GamepathContent
