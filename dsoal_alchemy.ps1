@@ -1387,7 +1387,9 @@ $BoutonParDefaut.add_Click({
         $BoutonTransmut.IsEnabled = $False
         $BoutonUnTransmut.IsEnabled = $False
         foreach ( $jeu in $jeunontransmut ) { $MenuGauche.Items.Add($jeu.name) | Out-Null }
+        Sortlistview $MenuGauche
         foreach ( $jeu in $jeutransmut ) { $MenuDroite.Items.Add($jeu.name) | Out-Null }
+        Sortlistview $MenuDroite
     }
 })
 
