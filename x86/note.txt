@@ -1,1 +1,1 @@
-place X86 (32bits) dsound.dll and soft_oal.dll file here
+place X86 (Win32) dsound.dll and dsoal-aldrv.dll file here

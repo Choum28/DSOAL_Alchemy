@@ -10,20 +10,16 @@ French and English version avalaible.
        
     
 ## Prerequesites
-OpenAlsoft : https://github.com/kcat/openal-soft binaries.<br>
 DSOAL : https://github.com/kcat/dsoal binaries.
-
-<p>Note 32 & 64 bits binaries of DSOAL could be found at https://ci.appveyor.com/project/ChrisRobinson/dsoal<br>
-Click on the correct job (x86 'Win32' or x64) -> artefact -> Click on dsoal.zip to download it</p>
 
 ## Installation
 
 * Copy the script dsoal_alchemy.ps1 and language (culture) folder into a folder of your choise.
-* Download dsoal.dll (https://github.com/kcat/dsoal)  and OpenAlsoft (https://github.com/kcat/openal-soft)
+* Download dsoal (https://github.com/kcat/dsoal)
 * Copy the dsound.dll 64bits version of the DSOAL wrapper into the X86-64 folder
 * Copy the dsound.dll 32bits version of theDSOAL wrapper into the X86 folder
-* Copy the soft_oal.dll 64bits version of openal-soft drivers into the X86-64 folder
-* Copy the soft_oal.dll 32bits version of openal-soft drivers into the X86 folder
+* Copy the dsoal-aldrv.dll 64bits version of the DSOAL wrapper into the X86-64 folder
+* Copy the dsoal-aldrv.dll 32bits version of the DSOAL wrapper into the X86 folder
 
 A Correct installation should look like this
 
@@ -40,11 +36,11 @@ DSOAL_Alchemy-main
     |-- configs                 Folder where you put specific openalsoft (ini file) configurations you want to use/deploy
     |
     |-- x86-64
-    |    |--soft_oal.dll        64 bits version of openal soft driver
+    |    |--dsoal-aldrv.dll     64 bits version of openal soft driver
     |    |--dsound.dll          64 bits version of dsoal
     |
     |-- x86
-         |--soft_oal.dll        32 bits version of openal soft driver
+         |--dsoal-aldrv.dll     32 bits version of openal soft driver
          |--dsound.dll          32 bits version of dsoal
 ```
 

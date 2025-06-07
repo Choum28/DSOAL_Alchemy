@@ -25,8 +25,9 @@
     AUTHOR:    Choum
 
     VERSION HISTORY:
+    1.6     07.06.2025    Change all reference of soft_oal.dll to dsoal-aldrv.dll as DSOAL now provide ready to use binary.
     1.5     22.08.2024    Add WPF Background colors, remove useless GridViewColumn
-    1.4     17.08.2024    Add SHA 256 CRC check on soft_oal.dll & dsound.dll (32&64bits)
+    1.4     17.08.2024    Add SHA 256 CRC check on dsoal-aldrv.dll & dsound.dll (32&64bits)
                           games that will not have same dlls as one in dsoal_alchemy folder will not appears in "Enabled list".
                           this will make dll version upgrades easier.
     1.3     15.08.2024    Add doubleclick support to transmut/Untransmut, possibility to edit from both Listview.
@@ -48,16 +49,16 @@ function LocateAlchemy {
         [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\Games.template","",0,16)
         exit
     }
-    if ( -Not ([System.IO.File]::Exists("$PSScriptRoot\x86-64\soft_oal.dll")) ) {
-        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\86-64\soft_oal.dll","",0,16)
+    if ( -Not ([System.IO.File]::Exists("$PSScriptRoot\x86-64\dsoal-aldrv.dll")) ) {
+        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\86-64\dsoal-aldrv.dll","",0,16)
         exit
     }
     if ( -Not ([System.IO.File]::Exists("$PSScriptRoot\x86-64\dsound.dll")) ) {
         [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\86-64\dsound.dll","",0,16)
         exit
     }
-    if ( -Not ([System.IO.File]::Exists("$PSScriptRoot\x86\soft_oal.dll")) ) {
-        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\x86\soft_oal.dll","",0,16)
+    if ( -Not ([System.IO.File]::Exists("$PSScriptRoot\x86\dsoal-aldrv.dll")) ) {
+        [System.Windows.MessageBox]::Show("$($txt.missfile) $PSScriptRoot\x86\dsoal-aldrv.dll","",0,16)
         exit
     }
     if ( -Not ([System.IO.File]::Exists("$PSScriptRoot\x86\dsound.dll")) ) {
@@ -372,9 +373,9 @@ function CheckFiles {
         if ( [System.IO.File]::Exists("$gamepath\dsoal-aldrv.dll") ) {
             $destHash = (Get-FileHash -Path "$gamepath\dsoal-aldrv.dll" -Algorithm SHA256).Hash
             if ( $script:OalHash -ne $destHash ) {
-                Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
+                Copy-Item -Path "$PSScriptRoot\x86\dsoal-aldrv.dll" -Destination $gamepath\dsoal-aldrv.dll
             }
-        } else { Copy-Item -Path "$PSScriptRoot\x86\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll }
+        } else { Copy-Item -Path "$PSScriptRoot\x86\dsoal-aldrv.dll" -Destination $gamepath\dsoal-aldrv.dll }
     } else {
         if ( [System.IO.File]::Exists("$gamepath\dsound.dll") ) {
             $destHash = (Get-FileHash -Path "$gamepath\dsound.dll" -Algorithm SHA256).Hash
@@ -385,9 +386,9 @@ function CheckFiles {
         if ( [System.IO.File]::Exists("$gamepath\dsoal-aldrv.dll") ) {
             $destHash = (Get-FileHash -Path "$gamepath\dsoal-aldrv.dll" -Algorithm SHA256).Hash
             if ( $script:OalHashx64 -ne $destHash ) {
-                Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll
+                Copy-Item -Path "$PSScriptRoot\x86-64\dsoal-aldrv.dll" -Destination $gamepath\dsoal-aldrv.dll
             }
-        } else { Copy-Item -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Destination $gamepath\dsoal-aldrv.dll }
+        } else { Copy-Item -Path "$PSScriptRoot\x86-64\dsoal-aldrv.dll" -Destination $gamepath\dsoal-aldrv.dll }
     }
 }
 
@@ -531,8 +532,8 @@ if ( !(Test-Path -path "$PSScriptRoot\Dsoal_alchemy.ini") ) {
     } else { Copy-item $PSScriptRoot\Games.template $PSScriptRoot\Dsoal_alchemy.ini }
 }
 
-$script:OalHash = (Get-FileHash -Path "$PSScriptRoot\x86\soft_oal.dll" -Algorithm SHA256).Hash 
-$script:OalHashx64 = (Get-FileHash -Path "$PSScriptRoot\x86-64\soft_oal.dll" -Algorithm SHA256).Hash
+$script:OalHash = (Get-FileHash -Path "$PSScriptRoot\x86\dsoal-aldrv.dll" -Algorithm SHA256).Hash 
+$script:OalHashx64 = (Get-FileHash -Path "$PSScriptRoot\x86-64\dsoal-aldrv.dll" -Algorithm SHA256).Hash
 $script:dsoundHash = (Get-FileHash -Path "$PSScriptRoot\x86\dsound.dll" -Algorithm SHA256).Hash 
 $script:dsoundHashx64 = (Get-FileHash -Path "$PSScriptRoot\x86-64\dsound.dll" -Algorithm SHA256).Hash 
 
@@ -567,7 +568,7 @@ $jeunontransmut = $script:jeutrouve | where-object {$_.Found -eq $true -and $_.T
             <TextBlock Name="Text_jeuInstall" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="20,54,0,0" Width="238"/>
             <TextBlock Name="Text_JeuTransmut" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Margin="472,54,0,0" Width="173"/>
             <TextBlock Name="T_URL" HorizontalAlignment="Left" TextWrapping="Wrap" Text="https://github.com/Choum28/DSOAL_Alchemy" VerticalAlignment="Top" Margin="20,361,0,0" FontSize="8"/>
-            <TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.5" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
+            <TextBlock Name="T_version" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Version 1.6" VerticalAlignment="Top" Margin="733,359,0,0" FontSize="8"/>
         </Grid>
     </Viewbox>
 </Window>
